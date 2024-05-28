@@ -26,6 +26,7 @@ public:
     ~GameManager();
 public slots:
     void startNewGame();
+    void movePlayed(int tile_to_move);
 };
 
 #endif // GAMEMANAGER_H

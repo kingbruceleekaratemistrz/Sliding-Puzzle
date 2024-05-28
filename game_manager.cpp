@@ -36,5 +36,14 @@ void GameManager::startNewGame()
 {
     board_->initializeNewGame();
     game_scene_ = new GameScene(0, 0, 1280, 720, board_->getSize(), board_->getTilesValues());
+    connect(game_scene_, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
     view_->setScene(game_scene_);
+}
+
+void GameManager::movePlayed(int tile_to_move)
+{
+    qDebug() << "Poruszono kafel: " << tile_to_move;
+    board_->playMove(tile_to_move);
+    if (board_->isSolved() == true)
+        qDebug() << "Wygrałeś koleżko!!!";
 }

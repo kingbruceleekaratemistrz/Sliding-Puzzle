@@ -38,6 +38,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         immoveable_tile.h immoveable_tile.cpp
 
 
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET SlidingPuzzle APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

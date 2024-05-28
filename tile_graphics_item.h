@@ -9,6 +9,7 @@
 class TileGraphicsItem : public QObject, public QGraphicsRectItem
 {
     Q_OBJECT
+    Q_PROPERTY(QRectF rect READ rect WRITE setRect)
 private:
     QString text_;
 public:
@@ -17,8 +18,8 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     QString getText();
-    virtual bool move(QRectF empty_space) = 0;
-    virtual QString toString() = 0;
+    virtual bool move(QRectF empty_space_rect, bool &animation_played) = 0;
+    virtual QString toString() = 0;    
 signals:
     void click();
 };

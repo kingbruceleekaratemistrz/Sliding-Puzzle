@@ -4,11 +4,11 @@
 #include "tile_graphics_item.h"
 
 class ImmoveableTile : public TileGraphicsItem
-{
+{    
 public:
     ImmoveableTile(QRectF rect, QString text);
-    ImmoveableTile(int x, int y, int w, int h, QString text);
-    bool move(QRectF empty_space);
+    ImmoveableTile(int x, int y, int w, int h, QString text);   
+    bool move(QRectF empty_space_rect, bool &animation_played);
     QString toString();
 };
 

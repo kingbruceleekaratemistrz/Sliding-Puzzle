@@ -5,7 +5,8 @@
 #include "moveable_tile.h"
 #include "immoveable_tile.h"
 
-GameScene::GameScene(int x, int y, int w, int h, int size, std::vector<int> tiles_values) : board_size_(size)
+GameScene::GameScene(int x, int y, int w, int h, int size, std::vector<int> tiles_values)
+    : board_size_(size), animation_played_(false)
 {
     setSceneRect(x, y, w, h);
 
@@ -29,73 +30,61 @@ GameScene::GameScene(int x, int y, int w, int h, int size, std::vector<int> tile
         }
     }
 
-    empty_tile_ = QRect(390+(size-1)*tile_offset_, 100+(size-1)*tile_offset_, tile_size_, tile_size_);
+    empty_tile_rect_ = QRect(390+(size-1)*tile_offset_, 100+(size-1)*tile_offset_, tile_size_, tile_size_);
+}
+
+std::vector<TileGraphicsItem*> GameScene::findNeighbors(QRectF rect)
+{
+    int x_offsets[4] = { 0, -tile_offset_, tile_offset_, 0 };
+    int y_offsets[4] = { -tile_offset_, 0, 0, tile_offset_ };
+    std::vector<TileGraphicsItem*> neighbors;
+    for (int i = 0; i < 4; i++)
+    {
+        TileGraphicsItem *potential_neighbor = static_cast<TileGraphicsItem*>(this->itemAt(rect.x()+x_offsets[i], rect.y()+y_offsets[i], QTransform()));
+        if (potential_neighbor != nullptr)
+            neighbors.push_back(potential_neighbor);
+    }
+    return neighbors;
 }
 
 void GameScene::moveTile()
 {
-    TileGraphicsItem *tile = static_cast<TileGraphicsItem*>(QObject::sender());
+    if (animation_played_ == true)
+        return;
 
-    QRectF prev_rect = tile->rect();
-    qDebug() << "x: " << tile->rect().x() << "; y: " << tile->rect().y() << "; num: " << tile->getText();
+    TileGraphicsItem *tile_to_move = static_cast<TileGraphicsItem*>(QObject::sender());
+    QRectF rect_before_move = tile_to_move->rect();
 
-    if (tile->move(empty_tile_))
+    animation_played_ = true;
+    if (tile_to_move->move(empty_tile_rect_, animation_played_))
     {
-        empty_tile_ = prev_rect;
-        // [x | y][north | west | east | south]
-        int offsets[2][4] = { {0, -tile_offset_, tile_offset_, 0}, {-tile_offset_, 0, 0, tile_offset_} };
-        for (int i = 0; i < 4; i++)
+        emit playMove(tile_to_move->getText().toInt());
+        std::vector<TileGraphicsItem*> prev_neighbors = findNeighbors(rect_before_move);
+        for (TileGraphicsItem *tile : prev_neighbors)
         {
-            TileGraphicsItem *prev_neighb = static_cast<TileGraphicsItem*>(this->itemAt(prev_rect.x()+offsets[0][i], prev_rect.y()+offsets[1][i], QTransform()));
-            if (prev_neighb != nullptr && prev_neighb != tile)
-            {
-                qDebug() << "Były sąsiad: " << prev_neighb->getText() << " zamieniany na ruszalnego";
-                QRectF rect = prev_neighb->rect();
-                QString text = prev_neighb->getText();
-                delete prev_neighb;
-
-                MoveableTile *tmp_tile = new MoveableTile(rect, text);
-                addItem(tmp_tile);
-                connect(tmp_tile, SIGNAL(click()), this, SLOT(moveTile()));
-            }
-
-            TileGraphicsItem *curr_neighb = static_cast<TileGraphicsItem*>(this->itemAt(tile->rect().x()+offsets[0][i], tile->rect().y()+offsets[1][i], QTransform()));
-            if (curr_neighb != nullptr)
-            {
-                qDebug() << "Nowy sąsiad: " << curr_neighb->getText() << " zamieniany na nieruszalnego";
-                QRectF rect = curr_neighb->rect();
-                QString text = curr_neighb->getText();
-                delete curr_neighb;
-
-                ImmoveableTile *tmp_tile = new ImmoveableTile(rect, text);
-                addItem(tmp_tile);
-                connect(tmp_tile, SIGNAL(click()), this, SLOT(moveTile()));
-            }
+            if (tile == tile_to_move)
+                continue;
+            QRectF tmp_rect = tile->rect();
+            QString tmp_text = tile->getText();
+            delete tile;
+            MoveableTile *tmp_tile = new MoveableTile(tmp_rect, tmp_text);
+            addItem(tmp_tile);
+            connect(tmp_tile, SIGNAL(click()), this, SLOT(moveTile()));
         }
+
+        std::vector<TileGraphicsItem*> new_neighbors = findNeighbors(empty_tile_rect_);
+        for (TileGraphicsItem *tile : new_neighbors)
+        {
+            if (tile == tile_to_move)
+                continue;
+            QRectF tmp_rect = tile->rect();
+            QString tmp_text = tile->getText();
+            delete tile;
+            ImmoveableTile *tmp_tile = new ImmoveableTile(tmp_rect, tmp_text);
+            addItem(tmp_tile);
+            connect(tmp_tile, SIGNAL(click()), this, SLOT(moveTile()));
+        }
+
+        empty_tile_rect_ = rect_before_move;
     }
-
-
-    // TileGraphicsItem *neighb = static_cast<TileGraphicsItem*>(this->itemAt(x, y-tile_offset_, QTransform()));
-    // if (neighb == nullptr)
-    //     qDebug() << "Brak górnego sąsiada";
-    // else
-    //     qDebug() << "Górny sąsiad: " << neighb->getText();
-
-    // neighb = static_cast<TileGraphicsItem*>(this->itemAt(x-tile_offset_, y, QTransform()));
-    // if (neighb == nullptr)
-    //     qDebug() << "Brak lewego sąsiada";
-    // else
-    //     qDebug() << "Lewy sąsiad: " << neighb->getText();
-
-    // neighb = static_cast<TileGraphicsItem*>(this->itemAt(x+tile_offset_, y, QTransform()));
-    // if (neighb == nullptr)
-    //     qDebug() << "Brak prawego sąsiada";
-    // else
-    //     qDebug() << "Prawy sąsiad: " << neighb->getText();
-
-    // neighb = static_cast<TileGraphicsItem*>(this->itemAt(x, y+tile_offset_, QTransform()));
-    // if (neighb == nullptr)
-    //     qDebug() << "Brak dolnego sąsiada";
-    // else
-    //     qDebug() << "Dolny sąsiad: " << neighb->getText();
 }
