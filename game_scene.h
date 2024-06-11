@@ -18,7 +18,7 @@ private:
     int tile_offset_;
     QRectF empty_tile_rect_;
 public:
-    GameScene(int x, int y, int w, int h, int size, std::vector<int> tiles_values);
+    GameScene(QPoint resolution, int size, std::vector<int> tiles_values);
 private:
     std::vector<TileGraphicsItem*> findNeighbors(QRectF rect);
 public slots:

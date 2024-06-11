@@ -4,15 +4,15 @@
 #include <QGraphicsScene>
 #include <QList>
 
-#include "my_button.h"
+#include "my_pixmap_button.h"
 
 class MainMenuScene : public QGraphicsScene
 {
 private:
-    QList<MyButton *> buttons_;
+    QList<MyPixmapButton *> buttons_;
 public:
-    MainMenuScene(int x, int y, int w, int h);
-    MyButton *getButton(int i);
+    MainMenuScene(QPoint resolution);
+    MyPixmapButton *getButton(int i);
 
     enum { BUTTON_CONTINUE, BUTTON_NEW_GAME, BUTTON_LEADERSHIP, BUTTON_SETTINGS, BUTTON_EXIT };
 };

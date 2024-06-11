@@ -1,15 +1,30 @@
 #include "my_button.h"
 
-#include <QDebug>
+#include <QPainter>
 
-MyButton::MyButton(QString path, int x, int y) : QGraphicsPixmapItem(QPixmap(path))
+MyButton::MyButton(QRectF rect, QString text) : text_(text)
 {
-    setPos(x, y);
+    setRect(rect);
     setFlag(QGraphicsItem::ItemIsFocusable);
 }
 
 void MyButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    qDebug() << "Klik!";
+    qDebug() << "KLIKENS";
     emit click();
+}
+
+void MyButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    QPainterPath path;
+    path.addRoundedRect(rect(), 5, 5);
+    painter->setPen(QColor(0, 14, 63));
+    painter->fillPath(path, QColor(0, 14, 63));
+    painter->drawPath(path);
+
+    painter->setFont(QFont("Irish Grover", 24));
+    painter->setPen(QColor(208, 211, 231));
+    painter->drawText(rect(), Qt::AlignCenter, text_);
 }

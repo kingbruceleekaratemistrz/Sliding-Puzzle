@@ -27,15 +27,22 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         classes.qmodel
         game_manager.h game_manager.cpp
 
-        view_board.h view_board.cpp
+
         main_menu_scene.h main_menu_scene.cpp
-        my_button.h my_button.cpp
+        my_pixmap_button.h my_pixmap_button.cpp
         leadership_scene.h leadership_scene.cpp
         settings_scene.h settings_scene.cpp
         game_scene.h game_scene.cpp
         tile_graphics_item.h tile_graphics_item.cpp
         moveable_tile.h moveable_tile.cpp
         immoveable_tile.h immoveable_tile.cpp
+
+        my_label.h my_label.cpp
+        my_check_box.h my_check_box.cpp
+        my_text_box.h my_text_box.cpp
+        my_select_box.h my_select_box.cpp
+        my_button.h my_button.cpp
+        my_radio_box.h my_radio_box.cpp
 
 
 

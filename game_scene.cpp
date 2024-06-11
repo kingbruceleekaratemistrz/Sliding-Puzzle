@@ -5,10 +5,10 @@
 #include "moveable_tile.h"
 #include "immoveable_tile.h"
 
-GameScene::GameScene(int x, int y, int w, int h, int size, std::vector<int> tiles_values)
+GameScene::GameScene(QPoint resolution, int size, std::vector<int> tiles_values)
     : board_size_(size), animation_played_(false)
 {
-    setSceneRect(x, y, w, h);
+    setSceneRect(0, 0, resolution.x(), resolution.y());
 
     int break_len = 10;
     tile_size_ = (500 - break_len * (size - 1)) / size;

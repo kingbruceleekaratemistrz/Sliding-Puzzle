@@ -8,10 +8,12 @@
 class SettingsScene : public QGraphicsScene
 {
 private:
-    MyButton *exit_button_;
+    QList<MyButton*> buttons_;
+private:
+    QPixmap loadPixmap(QString path, QPoint resolution);    
 public:
-    SettingsScene(int x, int y, int w, int h);
-    MyButton *getButton();
+    SettingsScene(QPoint resolution);
+    QList<MyButton*> getButtons();
 };
 
 #endif // SETTINGSSCENE_H

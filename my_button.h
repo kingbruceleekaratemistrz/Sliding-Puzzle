@@ -2,15 +2,18 @@
 #define MYBUTTON_H
 
 #include <QObject>
-#include <QGraphicsPixmapItem>
+#include <QGraphicsRectItem>
 #include <QGraphicsSceneMouseEvent>
 
-class MyButton : public QObject, public QGraphicsPixmapItem
+class MyButton : public QObject, public QGraphicsRectItem
 {
     Q_OBJECT
+private:
+    QString text_ = "";
 public:
-    MyButton(QString path, int x, int y);
+    MyButton(QRectF rect, QString text);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 signals:
     void click();
 };

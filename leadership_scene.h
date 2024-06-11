@@ -3,15 +3,15 @@
 
 #include <QGraphicsScene>
 
-#include "my_button.h"
+#include "my_pixmap_button.h"
 
 class LeadershipScene : public QGraphicsScene
 {
 private:
-    MyButton *exit_button_;
+    MyPixmapButton *exit_button_;
 public:
-    LeadershipScene(int x, int y, int w, int h);
-    MyButton *getButton();
+    LeadershipScene(QPoint resolution);
+    MyPixmapButton *getButton();
 };
 
 #endif // LEADERSHIPSCENE_H
