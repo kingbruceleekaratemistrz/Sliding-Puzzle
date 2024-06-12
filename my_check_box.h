@@ -8,8 +8,9 @@ class MyCheckBox : public QGraphicsRectItem
 {    
 private:
     bool is_checked_;
+    int arc_;
 public:
-    MyCheckBox(QRectF rect);
+    MyCheckBox(QRectF rect, bool is_checked, int arc);
     bool isChecked();
     void setChecked(bool state);
 

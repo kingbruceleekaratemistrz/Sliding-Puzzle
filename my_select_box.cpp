@@ -2,44 +2,61 @@
 
 #include <QPainter>
 
-MySelectBox::MySelectBox(QRectF rect, int format, int min, int max) : format_(format), kMin_(min), kMax_(max)
+MySelectBox::MySelectBox(QRectF rect, int format, int min, int max, int val, int font_size, int arc)
+    : format_(format), kMin_(min), kMax_(max), val_(val), font_size_(font_size)
 {
+    arc_ = (arc > 1) ? arc : 1;
     setRect(rect);
-    setFlag(QGraphicsItem::ItemIsFocusable);
-    val_ = (format_ == BOARD_SIZE ? 4 : 300);
+    setFlag(QGraphicsItem::ItemIsFocusable);    
 }
 
 void MySelectBox::setVal(int val)
 {
-    if (val >= kMin_ && val <= kMax_)
-    {
+    if (val <= kMin_)
+        val_ = kMin_;
+    else if (val >= kMax_)
+        val_ = kMax_;
+    else
         val_ = val;
-        update();
-    }
+    update();
+}
+
+int MySelectBox::val()
+{
+    return val_;
 }
 
 void MySelectBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     painter->setRenderHint(QPainter::Antialiasing);
 
+    int h = rect().height();
+    int w = rect().width();
+
     QPainterPath path;
-    path.addRoundedRect(rect(), 5, 5);
-    path.addRoundedRect(rect().adjusted(5, 5, -5, -5), 5, 5);
-    path.addRoundedRect(rect().adjusted(10, 10, -164, -10), 5, 5);
-    path.addRoundedRect(rect().adjusted(164, 10, -10, -10), 5, 5);
+    path.addRoundedRect(rect(), arc_, arc_);
+    path.addRoundedRect(rect().adjusted(arc_, arc_, -arc_, -arc_), arc_, arc_);
+    path.addRoundedRect(rect().adjusted(2*arc_, 2*arc_, h-w-2*arc_, -2*arc_), arc_, arc_);
+    path.addRoundedRect(rect().adjusted(w-h+2*arc_, 2*arc_, -2*arc_, -2*arc_), arc_, arc_);
+
     painter->setPen(QColor(0, 14, 63));
     painter->fillPath(path, QColor(0, 14, 63));
     painter->drawPath(path);
 
-    painter->setFont(QFont("Irish Grover", 24));
+    painter->setFont(QFont("Irish Grover", font_size_));
     painter->setPen(QColor(0, 14, 63));
     QString text = "";
     if (format_ == BOARD_SIZE)
         text = QString::number(val_)+"x"+QString::number(val_);
     else
     {
-        text = QString::number(val_/60)+":";
-        text += (val_%60 < 10) ? "0"+QString::number(val_%60) : QString::number(val_%60);
+        if (val_ == 0)
+            text = "Wył.";
+        else
+        {
+            text = QString::number(val_/60)+":";
+            text += (val_%60 < 10) ? "0"+QString::number(val_%60) : QString::number(val_%60);
+        }
     }
 
     painter->drawText(rect(), Qt::AlignCenter, text);

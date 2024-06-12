@@ -4,12 +4,13 @@
 #include <QPainter>
 #include <QKeyEvent>
 
-MyTextBox::MyTextBox(qreal x, qreal y)
+MyTextBox::MyTextBox(qreal x, qreal y, QString text, int font_size, int arc)
 {
+    arc_ = (arc > 1) ? arc : 1;
     setPos(x, y);
     setTextInteractionFlags(Qt::TextEditorInteraction);
-    setFont(QFont("Irish Grover", 24));
-    setPlainText("Nazwa");
+    setFont(QFont("Irish Grover", font_size));
+    setPlainText(text);
 }
 
 void MyTextBox::keyPressEvent(QKeyEvent *event)
@@ -28,8 +29,8 @@ void MyTextBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
     QRectF bounding_rect = boundingRect();
     QPainterPath path;
-    path.addRoundedRect(bounding_rect, 5, 5);
-    path.addRoundedRect(bounding_rect.adjusted(5, 5, -5, -5), 5, 5);
+    path.addRoundedRect(bounding_rect, arc_, arc_);
+    path.addRoundedRect(bounding_rect.adjusted(arc_, arc_, -arc_, -arc_), arc_, arc_);
     painter->setPen(QColor(0, 14, 63));
     painter->fillPath(path, QColor(0, 14, 63));
     painter->drawPath(path);

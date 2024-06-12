@@ -6,94 +6,46 @@
 #include "my_button.h"
 #include "my_radio_box.h"
 
+#include <QSettings>
 
-SettingsScene::SettingsScene(QPoint resolution)
-{
+SettingsScene::SettingsScene(QPointF resolution)
+{    
     setSceneRect(0, 0, resolution.x(), resolution.y());
+    addItem(new QGraphicsPixmapItem(loadPixmap("./assets/settings/background.png", resolution)));
 
     qreal scale_x = resolution.x() / 1920;
     qreal scale_y = resolution.y() / 1080;
 
-    QPixmap pixmap = loadPixmap("./assets/settings/background.png", resolution);
-    addItem(new QGraphicsPixmapItem(pixmap));
+    initLabels(scale_x, scale_y);
+    initCheckBoxes(scale_x, scale_y);
+    initTextBoxes(scale_x, scale_y);
+    initSelectBoxes(scale_x, scale_y);
+    initRadioBoxes(scale_x, scale_y);
+    initButtons(scale_x, scale_y);
+}
 
-    QRectF tmp_rect = QRectF(715*scale_x, 0, 490*scale_x, 125*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Ustawienia"), 75));
+SettingsScene::~SettingsScene()
+{
+    for (auto b : buttons_)
+        delete b;
+    delete fullscreen_cb_;
+    delete imagemode_cb_;
+    delete username_tb_;
+    delete boardsize_sb_;
+    delete maxtime_sb_;
+    delete hold_rb_;
+    delete toggle_rb_;
+}
 
-    tmp_rect = QRectF(400*scale_x, 150*scale_y, 400*scale_x, 75*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Ustawienia aplikacji"), 34));
-
-    tmp_rect = QRectF(460*scale_x, 230*scale_y, 167*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Pełny ekran"), 23));
-
-    tmp_rect = QRectF(400*scale_x, 290*scale_y, 400*scale_x, 75*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Ustawienia gry"), 34));
-
-    tmp_rect = QRectF(460*scale_x, 370*scale_y, 400*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Domyślna nazwa gracza"), 23));       
-
-    tmp_rect = QRectF(460*scale_x, 420*scale_y, 400*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Domyślny rozmiar planszy"), 23));
-
-    tmp_rect = QRectF(460*scale_x, 470*scale_y, 400*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Domyślny maksymalny czas"), 23));
-
-    tmp_rect = QRectF(460*scale_x, 520*scale_y, 220*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Motyw kolorów"), 23));
-
-    tmp_rect = QRectF(460*scale_x, 570*scale_y, 220*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Motyw kafelków"), 23));
-
-    tmp_rect = QRectF(460*scale_x, 620*scale_y, 230*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Tryb obrazkowy"), 23));
-
-    tmp_rect = QRectF(490*scale_x, 730*scale_y, 370*scale_x, 38*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Wyświetl numery kafelków"), 23));
-
-    tmp_rect = QRectF(965*scale_x, 710*scale_y, 53*scale_x, 18*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Naciśnij"), 11));
-
-    tmp_rect = QRectF(1049*scale_x, 710*scale_y, 60*scale_x, 18*scale_y);
-    addItem(new MyLabel(tmp_rect, QString("Trzymaj"), 11));
-
-
-    tmp_rect = QRectF(683*scale_x, 230*scale_y, 40*scale_x, 40*scale_y);
-    addItem(new MyCheckBox(tmp_rect));
-
-    addItem(new MyTextBox(873*scale_x, 370*scale_y));
-
-    tmp_rect = QRectF(873*scale_x, 420*scale_y, 200*scale_x, 46*scale_y);
-    addItem(new MySelectBox(tmp_rect, MySelectBox::BOARD_SIZE, 2, 20));
-
-    tmp_rect = QRectF(873*scale_x, 470*scale_y, 200*scale_x, 46*scale_y);
-    addItem(new MySelectBox(tmp_rect, MySelectBox::TIME, 10, 3600));
-
-    tmp_rect = QRectF(734*scale_x, 620*scale_y, 40*scale_x, 40*scale_y);
-    addItem(new MyCheckBox(tmp_rect));
-
-    tmp_rect = QRectF(972*scale_x, 730*scale_y, 40*scale_x, 40*scale_y);
-    MyRadioBox *r_box_1 = new MyRadioBox(tmp_rect);
-    MyRadioBox *r_box_2 = new MyRadioBox(tmp_rect.adjusted(85*scale_x, 0, 85*scale_x, 0));
-    connect(r_box_1, SIGNAL(click()), r_box_2, SLOT(onClick()));
-    connect(r_box_2, SIGNAL(click()), r_box_1, SLOT(onClick()));
-    addItem(r_box_1);
-    addItem(r_box_2);
-
-    tmp_rect = QRectF(490*scale_x, 680*scale_y, 180*scale_x, 40*scale_y);
-    buttons_.append(new MyButton(tmp_rect, "Dodaj obraz"));
-    addItem(buttons_[0]);
-
-    tmp_rect = QRectF(972*scale_x, 950*scale_y, 100*scale_x, 40*scale_y);
-    buttons_.append(new MyButton(tmp_rect, "Anuluj"));
-    addItem(buttons_[1]);
-
-    tmp_rect = QRectF(1082*scale_x, 950*scale_y, 100*scale_x, 40*scale_y);
-    buttons_.append(new MyButton(tmp_rect, "Zapisz"));
-    addItem(buttons_[2]);
-
-    tmp_rect = QRectF(1192*scale_x, 950*scale_y, 210*scale_x, 40*scale_y);
-    buttons_.append(new MyButton(tmp_rect, "Zapisz i wyjdź"));
-    addItem(buttons_[3]);       
+void SettingsScene::saveSettings()
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    settings.setValue("fullscreen", fullscreen_cb_->isChecked());
+    settings.setValue("username", username_tb_->toPlainText());
+    settings.setValue("boardsize", boardsize_sb_->val());
+    settings.setValue("maxtime", maxtime_sb_->val());
+    settings.setValue("imagemode", imagemode_cb_->isChecked());
+    settings.setValue("showonhold", hold_rb_->isChecked());
 }
 
 QList<MyButton*> SettingsScene::getButtons()
@@ -101,13 +53,143 @@ QList<MyButton*> SettingsScene::getButtons()
     return buttons_;
 }
 
-QPixmap SettingsScene::loadPixmap(QString path, QPoint resolution)
+MyButton* SettingsScene::getButton(int i)
 {
-    if (resolution == QPoint(1920, 1080))
+    return buttons_.at(i);
+}
+
+void SettingsScene::reload()
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    fullscreen_cb_->setChecked(settings.value("fullscreen").toInt());
+    imagemode_cb_->setChecked(settings.value("imagemode").toInt());
+    username_tb_->setPlainText(settings.value("username").toString());
+    boardsize_sb_->setVal(settings.value("boardsize").toInt());
+    maxtime_sb_->setVal(settings.value("maxtime").toInt());
+    hold_rb_->setChecked(settings.value("showonhold").toBool());
+    toggle_rb_->setChecked(!settings.value("showonhold").toBool());
+}
+
+QPixmap SettingsScene::loadPixmap(QString path, QPointF resolution)
+{
+    if (resolution == QPointF(1920, 1080))
         return QPixmap(path);
 
     QPixmap pixmap(path);
     qreal width = pixmap.width() * resolution.x() / 1920;
     qreal height = pixmap.height() * resolution.y() / 1080;
     return pixmap.scaled(width, height, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+}
+
+void SettingsScene::initLabels(qreal sx, qreal sy)
+{
+    QRectF rect[13] = {
+        QRectF(715*sx, 0*sy, 490*sx, 125*sy),
+        QRectF(400*sx, 150*sy, 400*sx, 75*sy),
+        QRectF(460*sx, 230*sy, 167*sx, 38*sy),
+        QRectF(400*sx, 290*sy, 400*sx, 75*sy),
+        QRectF(460*sx, 370*sy, 400*sx, 38*sy),
+        QRectF(460*sx, 420*sy, 400*sx, 38*sy),
+        QRectF(460*sx, 470*sy, 400*sx, 38*sy),
+        QRectF(460*sx, 520*sy, 220*sx, 38*sy),
+        QRectF(460*sx, 570*sy, 220*sx, 38*sy),
+        QRectF(460*sx, 620*sy, 230*sx, 38*sy),
+        QRectF(490*sx, 730*sy, 370*sx, 38*sy),
+        QRectF(965*sx, 710*sy, 53*sx, 18*sy),
+        QRectF(1049*sx, 710*sy, 60*sx, 18*sy)
+    };
+    int font_size[13] = { int(75*sy), int(34*sy), int(23*sy), int(34*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(11*sy), int(11*sy) };
+    QString text[13] = {
+        "Ustawienia",
+        "Ustawienia aplikacji",
+        "Pełny ekran",
+        "Ustawienia gry",
+        "Domyślna nazwa gracza",
+        "Domyślny rozmiar planszy",
+        "Domyślny maksymalny czas",
+        "Motyw kolorów",
+        "Motyw kafelków",
+        "Tryb obrazkowy",
+        "Wyświetl numery kafelków",
+        "Naciśnij",
+        "Trzymaj"
+    };
+    for (int i = 0; i < 13; i++)
+        addItem(new MyLabel(rect[i], text[i], font_size[i]));
+}
+
+void SettingsScene::initCheckBoxes(qreal sx, qreal sy)
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    QRectF rect[2] = {
+        QRectF(683*sx, 230*sy, 40*sx, 40*sy),
+        QRectF(734*sx, 620*sy, 40*sx, 40*sy)
+    };
+
+    fullscreen_cb_ = new MyCheckBox(rect[0], settings.value("fullscreen").toBool(), 5*sx);
+    addItem(fullscreen_cb_);
+
+    imagemode_cb_ = new MyCheckBox(rect[1], settings.value("imagemode").toBool(), 5*sx);
+    addItem(imagemode_cb_);
+}
+
+void SettingsScene::initTextBoxes(qreal sx, qreal sy)
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    username_tb_ = new MyTextBox(873*sx, 370*sy, settings.value("username").toString(), 23*sy, 5*sx);
+    addItem(username_tb_);
+
+}
+
+void SettingsScene::initSelectBoxes(qreal sx, qreal sy)
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    QRectF rect[2] = {
+        QRectF(873*sx, 420*sy, 200*sx, 44*sy),
+        QRectF(873*sx, 470*sy, 200*sx, 44*sy)
+    };
+
+    boardsize_sb_ = new MySelectBox(rect[0], MySelectBox::BOARD_SIZE, 2, 20, settings.value("boardsize").toInt(), 23*sy, 5*sy);
+    addItem(boardsize_sb_);
+
+    maxtime_sb_ = new MySelectBox(rect[1], MySelectBox::TIME, 0, 3600, settings.value("maxtime").toInt(), 23*sy, 5*sx);
+    addItem(maxtime_sb_);
+}
+
+void SettingsScene::initRadioBoxes(qreal sx, qreal sy)
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    QRectF rect(972*sx, 730*sy, 40*sx, 40*sy);
+
+    hold_rb_ = new MyRadioBox(rect, settings.value("showonhold").toBool(), 5*sx);
+    toggle_rb_ = new MyRadioBox(rect.adjusted(85*sx, 0, 85*sx, 0), !settings.value("showonhold").toBool(), 5*sx);
+    connect(hold_rb_, SIGNAL(click()), toggle_rb_, SLOT(onClick()));
+    connect(toggle_rb_, SIGNAL(click()), hold_rb_, SLOT(onClick()));
+    addItem(hold_rb_);
+    addItem(toggle_rb_);
+}
+
+void SettingsScene::initButtons(qreal sx, qreal sy)
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    QRectF rect[4] = {
+        QRectF(490*sx, 680*sy, 180*sx, 40*sy),
+        QRectF(972*sx, 950*sy, 100*sx, 40*sy),
+        QRectF(1082*sx, 950*sy, 100*sx, 40*sy),
+        QRectF(1192*sx, 950*sy, 210*sx, 40*sy)
+    };
+
+    buttons_.append(new MyButton(rect[0], "Dodaj obraz", 23*sy));
+    addItem(buttons_[0]);
+
+    buttons_.append(new MyButton(rect[1], "Wyjdź", 23*sy));
+    addItem(buttons_[1]);
+
+    buttons_.append(new MyButton(rect[2], "Zapisz", 23*sy));
+    connect(buttons_[2], SIGNAL(click()), this, SLOT(saveSettings()));
+    addItem(buttons_[2]);
+
+    buttons_.append(new MyButton(rect[3], "Zapisz i wyjdź", 23*sy));
+    connect(buttons_[3], SIGNAL(click()), this, SLOT(saveSettings()));
+    addItem(buttons_[3]);
 }

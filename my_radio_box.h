@@ -8,7 +8,7 @@ class MyRadioBox : public QObject, public MyCheckBox
 {
     Q_OBJECT
 public:
-    MyRadioBox(QRectF rect);
+    MyRadioBox(QRectF rect, bool is_checked, int arc);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
 public slots:
     void onClick();

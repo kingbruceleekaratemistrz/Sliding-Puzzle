@@ -1,10 +1,10 @@
 #include "main_menu_scene.h"
 
-MainMenuScene::MainMenuScene(QPoint resolution)
+MainMenuScene::MainMenuScene(QPointF resolution)
 {
     setSceneRect(0, 0, resolution.x(), resolution.y());
 
-    if (resolution != QPoint(1920, 1080))
+    if (resolution != QPointF(1920, 1080))
     {
         QPixmap pixmap("./assets/main_menu/background.png");
         qreal width = pixmap.width() * resolution.x() / 1920;
@@ -22,7 +22,7 @@ MainMenuScene::MainMenuScene(QPoint resolution)
         QPixmap pixmap(path);
         qreal x = 690;
         qreal y = 420 + i*120;
-        if (resolution != QPoint(1920, 1080))
+        if (resolution != QPointF(1920, 1080))
         {
             x = x * resolution.x() / 1920;
             y = y * resolution.y() / 1080;

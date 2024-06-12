@@ -1,47 +1,80 @@
 #include "game_manager.h"
+
 #include <QApplication>
+#include <QSettings>
+
+#include "main_menu_scene.h"
+#include "leadership_scene.h"
+#include "settings_scene.h"
+#include "game_scene.h"
 
 GameManager::GameManager(int size) : board_(new Board(size))
 {
+    initSettings();
+    QSettings settings("config.ini", QSettings::IniFormat);
+
     view_ = new QGraphicsView();
     view_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view_->setWindowState(Qt::WindowFullScreen);
+    if (settings.value("fullscreen").toBool())
+        view_->setWindowState(Qt::WindowFullScreen);
+    else
+        view_->setFixedSize(1280, 720);
 
-    qDebug() << QPoint(view_->width(), view_->height());
-    main_menu_scene_ = new MainMenuScene(QPoint(view_->width(), view_->height()));
-    leadership_scene_ = new LeadershipScene(QPoint(view_->width(), view_->height()));
-    settings_scene_ = new SettingsScene(QPoint(view_->width(), view_->height()));
-
-    // connect(main_menu_scene_->getButton(MainMenuScene::BUTTON_CONTINUE), SIGNAL(click()), this, SLOT());
-    connect(main_menu_scene_->getButton(MainMenuScene::BUTTON_NEW_GAME), SIGNAL(click()), this, SLOT(startNewGame()));
-    connect(main_menu_scene_->getButton(MainMenuScene::BUTTON_LEADERSHIP), &MyPixmapButton::click, this, [this]{ view_->setScene(leadership_scene_); });
-    connect(main_menu_scene_->getButton(MainMenuScene::BUTTON_SETTINGS), &MyPixmapButton::click, this, [this]{ view_->setScene(settings_scene_); });
-    connect(main_menu_scene_->getButton(MainMenuScene::BUTTON_EXIT), SIGNAL(click()), QApplication::instance(), SLOT(quit()));
-    // connect(leadership_scene_->getButton(), &MyButton::click, this, [this]{ view_->setScene(main_menu_scene_); });
-    connect(settings_scene_->getButtons()[1], &MyButton::click, this, [this]{ view_->setScene(main_menu_scene_); });
-
-
-    //view_->setFixedSize(res_.x(), res_.y());
-    view_->setScene(main_menu_scene_    );
+    setMenuScene();
     view_->show();
 }
 
 GameManager::~GameManager()
 {
     delete board_;
-    delete main_menu_scene_;
-    delete leadership_scene_;
-    delete settings_scene_;
-    delete game_scene_;
+    delete view_;
 }
 
-void GameManager::startNewGame()
+void GameManager::setMenuScene()
+{
+    reload();
+
+    MainMenuScene *new_scene = new MainMenuScene(QPointF(view_->width(), view_->height()));
+    connect(new_scene->getButton(MainMenuScene::BUTTON_NEW_GAME), SIGNAL(click()), this, SLOT(setGameScene()));
+    //connect(new_scene->getButton(MainMenuScene::BUTTON_LEADERSHIP))
+    connect(new_scene->getButton(MainMenuScene::BUTTON_SETTINGS), SIGNAL(click()), this, SLOT(setSettingsScene()));
+    connect(new_scene->getButton(MainMenuScene::BUTTON_EXIT), SIGNAL(click()), QApplication::instance(), SLOT(quit()));
+
+    QGraphicsScene *prev_scene = view_->scene();
+    view_->setScene(new_scene);
+    delete prev_scene;
+}
+
+void GameManager::setSettingsScene()
+{
+    SettingsScene *new_scene = new SettingsScene(QPointF(view_->width(), view_->height()));
+    connect(new_scene->getButton(SettingsScene::EXIT), SIGNAL(click()), this, SLOT(setMenuScene()));
+    connect(new_scene->getButton(SettingsScene::SAVE_AND_EXIT), SIGNAL(click()), this, SLOT(setMenuScene()));
+
+    QGraphicsScene *prev_scene = view_->scene();
+    view_->setScene(new_scene);
+    delete prev_scene;
+}
+
+void GameManager::setGameScene()
 {
     board_->initializeNewGame();
-    game_scene_ = new GameScene(QPoint(view_->width(), view_->height()), board_->getSize(), board_->getTilesValues());
-    connect(game_scene_, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
-    view_->setScene(game_scene_);
+    GameScene *new_scene = new GameScene(QPoint(view_->width(), view_->height()), board_->getSize(), board_->getTilesValues());
+    connect(new_scene, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
+
+    QGraphicsScene *prev_scene = view_->scene();
+    view_->setScene(new_scene);
+    delete prev_scene;
+}
+
+void GameManager::setLeadershipScene()
+{
+    LeadershipScene *new_scene = new LeadershipScene(QPoint(view_->width(), view_->height()));
+
+    QGraphicsScene *prev_scene = view_->scene();
+    view_->setScene(new_scene);
+    delete prev_scene;
 }
 
 void GameManager::movePlayed(int tile_to_move)
@@ -51,3 +84,61 @@ void GameManager::movePlayed(int tile_to_move)
     if (board_->isSolved() == true)
         qDebug() << "Wygrałeś koleżko!!!";
 }
+
+void GameManager::initSettings()
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    if (!settings.contains("fullscreen"))
+        settings.setValue("fullscreen", true);
+    if (!settings.contains("username"))
+        settings.setValue("username", "player");
+    if (!settings.contains("boardsize"))
+        settings.setValue("boardsize", 3);
+    if (!settings.contains("maxtime"))
+        settings.setValue("maxtime", 0);
+    if (!settings.contains("imagemode"))
+        settings.setValue("imagemode", false);
+    if (!settings.contains("showonhold"))
+        settings.setValue("showonhold", true);
+}
+
+void GameManager::reload()
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    if (settings.value("fullscreen").toBool() && view_->windowState() != Qt::WindowFullScreen)
+    {
+        view_->setFixedSize(QSize(1920, 1080));
+        view_->setWindowState(Qt::WindowFullScreen);
+
+    }
+    else if (!settings.value("fullscreen").toBool() && view_->windowState() == Qt::WindowFullScreen)
+    {
+        view_->setWindowState(Qt::WindowNoState);
+        view_->setFixedSize(QSize(1280, 720));
+    }
+}
+
+// void GameManager::reloadResolution()
+// {
+//     QSettings settings("config.ini", QSettings::IniFormat);
+//     if (settings.value("fullscreen").toBool() && view_->windowState() != Qt::WindowFullScreen)
+//     {
+//         view_->setFixedSize(QSize(1920, 1080));
+//         view_->setWindowState(Qt::WindowFullScreen);
+
+//     }
+//     else if (!settings.value("fullscreen").toBool() && view_->windowState() == Qt::WindowFullScreen)
+//     {
+//         view_->setWindowState(Qt::WindowNoState);
+//         view_->setFixedSize(QSize(1280, 720));
+//     }
+
+//     initMenuScene();
+//     initSettingsScene();
+// }
+
+// void GameManager::setSettingsScene()
+// {
+//     settings_scene_->reload();
+//     view_->setScene(settings_scene_);
+// }

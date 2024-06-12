@@ -2,7 +2,7 @@
 
 #include <QGraphicsSceneMouseEvent>
 
-MyRadioBox::MyRadioBox(QRectF rect) : MyCheckBox(rect)
+MyRadioBox::MyRadioBox(QRectF rect, bool is_checked, int arc) : MyCheckBox(rect, is_checked, arc)
 {
 }
 

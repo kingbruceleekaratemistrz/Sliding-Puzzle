@@ -2,7 +2,7 @@
 
 #include <QPainter>
 
-MyButton::MyButton(QRectF rect, QString text) : text_(text)
+MyButton::MyButton(QRectF rect, QString text, int font_size) : text_(text), font_size_(font_size)
 {
     setRect(rect);
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -24,7 +24,7 @@ void MyButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->fillPath(path, QColor(0, 14, 63));
     painter->drawPath(path);
 
-    painter->setFont(QFont("Irish Grover", 24));
+    painter->setFont(QFont("Irish Grover", font_size_));
     painter->setPen(QColor(208, 211, 231));
     painter->drawText(rect(), Qt::AlignCenter, text_);
 }
