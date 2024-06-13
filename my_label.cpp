@@ -18,3 +18,14 @@ void MyLabel::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
     painter->setPen(QColor(0, 14, 63));
     painter->drawText(rect(), Qt::AlignLeft, text_);
 }
+
+QString MyLabel::text()
+{
+    return text_;
+}
+
+void MyLabel::setText(QString text)
+{
+    text_ = text;
+    update();
+}

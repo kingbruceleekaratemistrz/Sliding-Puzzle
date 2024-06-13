@@ -7,8 +7,9 @@
 #include "leadership_scene.h"
 #include "settings_scene.h"
 #include "game_scene.h"
+#include "end_scene.h"
 
-GameManager::GameManager(int size) : board_(new Board(size))
+GameManager::GameManager() : board_(new Board())
 {
     initSettings();
     QSettings settings("config.ini", QSettings::IniFormat);
@@ -43,7 +44,16 @@ void GameManager::setMenuScene()
 
     QGraphicsScene *prev_scene = view_->scene();
     view_->setScene(new_scene);
-    delete prev_scene;
+    prev_scene->deleteLater();
+}
+
+void GameManager::setEndScene(QPixmap background)
+{
+    EndScene *new_scene = new EndScene(QPointF(view_->width(), view_->height()), background);
+
+    QGraphicsScene *prev_scene = view_->scene();
+    view_->setScene(new_scene);
+    prev_scene->deleteLater();
 }
 
 void GameManager::setSettingsScene()
@@ -53,19 +63,20 @@ void GameManager::setSettingsScene()
     connect(new_scene->getButton(SettingsScene::SAVE_AND_EXIT), SIGNAL(click()), this, SLOT(setMenuScene()));
 
     QGraphicsScene *prev_scene = view_->scene();
-    view_->setScene(new_scene);
-    delete prev_scene;
+    view_->setScene(new_scene);    
+    prev_scene->deleteLater();
 }
 
 void GameManager::setGameScene()
 {
     board_->initializeNewGame();
-    GameScene *new_scene = new GameScene(QPoint(view_->width(), view_->height()), board_->getSize(), board_->getTilesValues());
+    GameScene *new_scene = new GameScene(QPointF(view_->width(), view_->height()), board_->getSize(), board_->getTilesValues());
     connect(new_scene, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
+    connect(new_scene->getButton(), SIGNAL(click()), this, SLOT(setMenuScene()));
 
     QGraphicsScene *prev_scene = view_->scene();
     view_->setScene(new_scene);
-    delete prev_scene;
+    prev_scene->deleteLater();
 }
 
 void GameManager::setLeadershipScene()
@@ -73,16 +84,27 @@ void GameManager::setLeadershipScene()
     LeadershipScene *new_scene = new LeadershipScene(QPoint(view_->width(), view_->height()));
 
     QGraphicsScene *prev_scene = view_->scene();
-    view_->setScene(new_scene);
-    delete prev_scene;
+    view_->setScene(new_scene);    
+    prev_scene->deleteLater();
 }
+
+
+#include <QTimer>
 
 void GameManager::movePlayed(int tile_to_move)
 {
     qDebug() << "Poruszono kafel: " << tile_to_move;
-    board_->playMove(tile_to_move);
+    board_->playMove(tile_to_move);    
     if (board_->isSolved() == true)
+    {
         qDebug() << "Wygrałeś koleżko!!!";
+        QPoint result = static_cast<GameScene*>(view_->scene())->getResult();
+        qDebug() << "Liczba ruchów: " << result.x();
+        qDebug() << result.y();
+        qDebug() << "Czas: " << int(result.y()/60) << ":" << int(result.y()%60);
+        QTimer timer;
+        timer.singleShot(150, [this]{ setEndScene(view_->grab()); });
+    }
 }
 
 void GameManager::initSettings()
@@ -116,29 +138,6 @@ void GameManager::reload()
         view_->setWindowState(Qt::WindowNoState);
         view_->setFixedSize(QSize(1280, 720));
     }
+    if (settings.value("boardsize").toInt() != board_->getSize())
+        board_->setSize(settings.value("boardsize").toInt());
 }
-
-// void GameManager::reloadResolution()
-// {
-//     QSettings settings("config.ini", QSettings::IniFormat);
-//     if (settings.value("fullscreen").toBool() && view_->windowState() != Qt::WindowFullScreen)
-//     {
-//         view_->setFixedSize(QSize(1920, 1080));
-//         view_->setWindowState(Qt::WindowFullScreen);
-
-//     }
-//     else if (!settings.value("fullscreen").toBool() && view_->windowState() == Qt::WindowFullScreen)
-//     {
-//         view_->setWindowState(Qt::WindowNoState);
-//         view_->setFixedSize(QSize(1280, 720));
-//     }
-
-//     initMenuScene();
-//     initSettingsScene();
-// }
-
-// void GameManager::setSettingsScene()
-// {
-//     settings_scene_->reload();
-//     view_->setScene(settings_scene_);
-// }

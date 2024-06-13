@@ -40,7 +40,7 @@ public:
     MyButton *getButton(int i);
     void reload();
 public slots:
-    void saveSettings();
+    void saveSettings();    
 };
 
 #endif // SETTINGSSCENE_H

@@ -2,11 +2,11 @@
 
 #include <QPropertyAnimation>
 
-MoveableTile::MoveableTile(QRectF rect, QString text) : TileGraphicsItem(rect, text)
+MoveableTile::MoveableTile(QRectF rect, QString text, QColor color) : TileGraphicsItem(rect, text, color)
 {    
 }
 
-MoveableTile::MoveableTile(int x, int y, int w, int h, QString text) : TileGraphicsItem(x, y, w, h, text)
+MoveableTile::MoveableTile(int x, int y, int w, int h, QString text, QColor color) : TileGraphicsItem(x, y, w, h, text, color)
 {
 }
 

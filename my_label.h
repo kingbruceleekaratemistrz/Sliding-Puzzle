@@ -11,6 +11,8 @@ private:
 public:    
     MyLabel(QRectF rect, QString text, int font_size = -1);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
+    QString text();
+    void setText(QString text);
 };
 
 #endif // MYLABEL_H

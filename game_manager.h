@@ -6,7 +6,6 @@
 
 #include "board.h"
 
-
 class GameManager : public QObject
 {
     Q_OBJECT
@@ -15,12 +14,12 @@ private:
     QGraphicsView *view_;
 
 public:
-    GameManager(int size);
+    GameManager();
     ~GameManager();
 private:
     void reload();
     void initSettings();
-
+    void setEndScene(QPixmap background);
 private slots:
     void setMenuScene();
     void setSettingsScene();

@@ -6,8 +6,8 @@
 class MoveableTile : public TileGraphicsItem
 {   
 public:
-    MoveableTile(QRectF rect, QString text);
-    MoveableTile(int x, int y, int w, int h, QString text);
+    MoveableTile(QRectF rect, QString text, QColor color);
+    MoveableTile(int x, int y, int w, int h, QString text, QColor color);
     bool move(QRectF empty_space_rect, bool &animation_played);
     QString toString();
 };

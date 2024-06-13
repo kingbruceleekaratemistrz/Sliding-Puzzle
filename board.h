@@ -7,13 +7,14 @@
 class Board
 {
 private:
-    const int kSize_;
-    const int kEmptyTileValue_;
+    int size_;
+    int empty_tile_value_;
     std::vector<Tile> tiles_;
 public:
-    Board(int size);
+    Board();
 
     const int& getSize() const;
+    void setSize(int size);
     std::vector<int> getTilesValues() const;
     void initializeNewGame();
     void playMove(int tile_num);

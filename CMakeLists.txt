@@ -43,6 +43,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         my_select_box.h my_select_box.cpp
         my_button.h my_button.cpp
         my_radio_box.h my_radio_box.cpp
+        my_timer.h my_timer.cpp
+        end_scene.h end_scene.cpp
 
 
 

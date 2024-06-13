@@ -3,15 +3,21 @@
 #include <random>
 #include <cstdlib>
 #include <stdexcept>
+#include <QSettings>
 
-Board::Board(int size) : kSize_(size), kEmptyTileValue_(size*size)
+Board::Board()
 {
+    QSettings settings("config.ini", QSettings::IniFormat);
+    size_ = settings.value("boardsize").toInt();
+    empty_tile_value_= size_*size_;
 }
 
 void Board::initializeNewGame()
 {
-    for (int r = 0; r < kSize_; r++)
-        for (int c = 0; c < kSize_; c++)
+    tiles_.clear();
+
+    for (int r = 0; r < size_; r++)
+        for (int c = 0; c < size_; c++)
             tiles_.push_back(Tile(r, c));
 
     do {
@@ -19,7 +25,9 @@ void Board::initializeNewGame()
     } while (!isSolvable() || isSolved());
 }
 
-const int& Board::getSize() const { return kSize_; }
+const int& Board::getSize() const { return size_; }
+
+void Board::setSize(int size) { size_ = size; };
 
 std::vector<int> Board::getTilesValues() const
 {
@@ -32,7 +40,7 @@ std::vector<int> Board::getTilesValues() const
 void Board::playMove(int tile_num)
 {
     Tile &tile_to_move = getTileByValue(tile_num);
-    Tile &empty_tile = getTileByValue(kEmptyTileValue_);
+    Tile &empty_tile = getTileByValue(empty_tile_value_);
 
     if (areNeighbors(tile_to_move, empty_tile))
         swapTilesValues(tile_to_move, empty_tile);
@@ -50,13 +58,13 @@ bool Board::isSolved() const
 
 void Board::shuffle()
 {
-    std::vector<bool> value_used(kSize_*kSize_, false);
+    std::vector<bool> value_used(size_*size_, false);
 
     std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(1, kSize_*kSize_ - 1);
+    std::uniform_int_distribution<std::mt19937::result_type> dist(1, size_*size_ - 1);
 
-    for (int i = 0; i < kSize_*kSize_ - 1; i++)
+    for (int i = 0; i < size_*size_ - 1; i++)
     {
         int value;
         do {
@@ -66,7 +74,7 @@ void Board::shuffle()
         value_used[value] = true;
         tiles_[i].setValue(value);
     }
-    tiles_[kSize_*kSize_ - 1].setValue(kEmptyTileValue_);
+    tiles_[size_*size_ - 1].setValue(empty_tile_value_);
 }
 
 void Board::swapTilesValues(Tile& t1, Tile&t2)
@@ -93,9 +101,9 @@ bool Board::isSolvable() const
 {
     int inversions = countInversions();
 
-    if ((kSize_ % 2 == 1) && (inversions % 2 == 0))
+    if ((size_ % 2 == 1) && (inversions % 2 == 0))
         return true;
-    else if ((kSize_ % 2 == 0) && ((inversions + kSize_ - 1) % 2 == 1))
+    else if ((size_ % 2 == 0) && ((inversions + size_ - 1) % 2 == 1))
         return true;
     else
         return false;
@@ -107,8 +115,8 @@ int Board::countInversions() const
     std::vector<int> tiles_values = this->getTilesValues();
     tiles_values.pop_back();
 
-    for (int l = 0; l < kSize_*kSize_; l++)
-        for (int r = l + 1; r < kSize_*kSize_; r++)
+    for (int l = 0; l < size_*size_; l++)
+        for (int r = l + 1; r < size_*size_; r++)
             if (tiles_values[l] > tiles_values[r])
                 inversions++;
 

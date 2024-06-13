@@ -64,8 +64,10 @@ void MySelectBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 
 void MySelectBox::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    QRectF left_rect = rect().adjusted(10, 10, -164, -10);
-    QRectF right_rect = rect().adjusted(164, 10, -10, -10);
+    int h = rect().height();
+    int w = rect().width();
+    QRectF left_rect = rect().adjusted(2*arc_, 2*arc_,  h-w-2*arc_, -2*arc_);
+    QRectF right_rect = rect().adjusted(w-h+2*arc_, 2*arc_, -2*arc_, -2*arc_);
     if (left_rect.contains(event->pos()))
         setVal(val_ - (format_ == BOARD_SIZE ? 1 : 10));
     else if (right_rect.contains(event->pos()))

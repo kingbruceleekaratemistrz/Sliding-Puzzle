@@ -3,13 +3,13 @@
 #include <QSequentialAnimationGroup>
 #include <QPropertyAnimation>
 
-ImmoveableTile::ImmoveableTile(QRectF rect, QString text)
-    : TileGraphicsItem(rect, text)
+ImmoveableTile::ImmoveableTile(QRectF rect, QString text, QColor color)
+    : TileGraphicsItem(rect, text, color)
 {
 }
 
-ImmoveableTile::ImmoveableTile(int x, int y, int w, int h, QString text)
-    : TileGraphicsItem(x, y, w, h, text)
+ImmoveableTile::ImmoveableTile(int x, int y, int w, int h, QString text, QColor color)
+    : TileGraphicsItem(x, y, w, h, text, color)
 {
 }
 
@@ -18,9 +18,9 @@ bool ImmoveableTile::move(QRectF empty_tile_rect, bool &animation_played)
     qDebug() << "Klik na nieruszalny kafel";
 
     QRectF rect_moved_right = rect();
-    rect_moved_right.moveLeft(rect_moved_right.x()+15);
+    rect_moved_right.moveLeft(rect_moved_right.x()+rect().width()*0.1);
     QRectF rect_moved_left = rect();
-    rect_moved_left.moveLeft(rect_moved_left.x()-15);
+    rect_moved_left.moveLeft(rect_moved_left.x()-rect().width()*0.1);
 
     QSequentialAnimationGroup *group_anim = new QSequentialAnimationGroup();
     QPropertyAnimation *anim = new QPropertyAnimation(this, "rect");
