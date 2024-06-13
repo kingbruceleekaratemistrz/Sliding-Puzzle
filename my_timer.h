@@ -14,6 +14,7 @@ private:
     QTimer *timer_;
 public:
     MyTimer(QRectF rect, int font_size = -1);
+    MyTimer(QRectF rect, int min, int sec, int font_size = -1);
     ~MyTimer();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
     int getTime();

@@ -26,11 +26,12 @@ private:
     MyLabel *move_count_label_;
     MyTimer *timer_;
 public:
-    GameScene(QPointF resolution, int size, std::vector<int> tiles_values);
+    GameScene(QPointF resolution, int size, std::vector<int> tiles_values, int time = 0, int move_count = 0);
     MyButton *getButton();
     QPoint getResult();
 private:
     std::vector<TileGraphicsItem*> findNeighbors(QRectF rect);
+    bool isNeighborOfEmptyTile(int r, int c, int er, int ec);
 public slots:
     void moveTile();    
 signals:

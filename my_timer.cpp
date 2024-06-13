@@ -17,6 +17,17 @@ MyTimer::MyTimer(QRectF rect, int font_size) : font_size_(font_size)
     timer_->start(1000);
 }
 
+MyTimer::MyTimer(QRectF rect, int min, int sec, int font_size) : font_size_(font_size), min_(min), sec_(sec)
+{
+    setRect(rect);
+    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect();
+    effect->setOffset(1);
+    setGraphicsEffect(effect);
+    timer_ = new QTimer(this);
+    connect(timer_, &QTimer::timeout, this, &MyTimer::inc);
+    timer_->start(1000);
+}
+
 void MyTimer::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QString text = QString::number(min_).rightJustified(2, '0');

@@ -24,7 +24,9 @@ private slots:
     void setMenuScene();
     void setSettingsScene();
     void setGameScene();
+    void setContinueGameScene();
     void setLeadershipScene();
+    void saveGameState(QPoint score);
 public slots:    
     void movePlayed(int tile_to_move);
 };

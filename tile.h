@@ -9,6 +9,7 @@ private:
     const int kCol_;
 public:
     Tile(int row, int col);
+    Tile(int row, int col, int value);
 
     const int& getValue() const;
     const int& getRow() const;

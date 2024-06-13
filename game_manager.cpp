@@ -39,6 +39,7 @@ void GameManager::setMenuScene()
     reload();
 
     MainMenuScene *new_scene = new MainMenuScene(QPointF(view_->width(), view_->height()));
+    connect(new_scene->getButton(MainMenuScene::BUTTON_CONTINUE), SIGNAL(click()), this, SLOT(setContinueGameScene()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_NEW_GAME), SIGNAL(click()), this, SLOT(setGameScene()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_LEADERSHIP), SIGNAL(click()), this, SLOT(setLeadershipScene()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_SETTINGS), SIGNAL(click()), this, SLOT(setSettingsScene()));
@@ -71,11 +72,64 @@ void GameManager::setSettingsScene()
     prev_scene->deleteLater();
 }
 
+void GameManager::setContinueGameScene()
+{
+    QFile file("./gamestate");
+    bool fail = false;
+    int board_size, move_count, time_count;
+    std::vector<int> tiles_values;
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "Nie udało się otwrzyć pliku zapisu";
+        fail = true;
+    }
+
+    QTextStream in(&file);
+    if (in.atEnd())
+        fail = true;
+    else
+    {
+        QStringList list = in.readLine().split(u';');
+        board_size = list.at(0).toInt();
+        move_count = list.at(1).toInt();
+        time_count = list.at(2).toInt();
+    }
+    if (in.atEnd())
+        fail = true;
+    else
+    {
+        QStringList list = in.readLine().split(u';');
+        for (auto &val : list)
+            tiles_values.push_back(val.toInt());
+    }
+
+    if (fail)
+    {
+        setGameScene();
+        return;
+    }
+    else
+    {
+        board_->setSize(board_size);
+        board_->initializeNewGame(tiles_values);
+        GameScene *new_scene = new GameScene(QPointF(view_->width(), view_->height()), board_size, tiles_values, time_count, move_count);
+        connect(new_scene, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
+        connect(new_scene->getButton(), &MyButton::click, this, [this]{ saveGameState(static_cast<GameScene*>(view_->scene())->getResult()); });
+        connect(new_scene->getButton(), SIGNAL(click()), this, SLOT(setMenuScene()));
+
+        QGraphicsScene *prev_scene = view_->scene();
+        view_->setScene(new_scene);
+        prev_scene->deleteLater();
+    }
+
+}
+
 void GameManager::setGameScene()
 {
     board_->initializeNewGame();
     GameScene *new_scene = new GameScene(QPointF(view_->width(), view_->height()), board_->getSize(), board_->getTilesValues());
     connect(new_scene, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
+    connect(new_scene->getButton(), &MyButton::click, this, [this]{ saveGameState(static_cast<GameScene*>(view_->scene())->getResult()); });
     connect(new_scene->getButton(), SIGNAL(click()), this, SLOT(setMenuScene()));
 
     QGraphicsScene *prev_scene = view_->scene();
@@ -91,6 +145,22 @@ void GameManager::setLeadershipScene()
     QGraphicsScene *prev_scene = view_->scene();
     view_->setScene(new_scene);
     prev_scene->deleteLater();
+}
+
+void GameManager::saveGameState(QPoint score)
+{
+    QFile file("./gamestate");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        return;
+
+    QTextStream out(&file);
+    out << board_->getSize() << ";" << score.x() << ";" << score.y() << "\n";
+
+    std::vector<int> tiles_values = board_->getTilesValues();
+    for (auto &value : tiles_values)
+        out << value << ";";
+
+    file.close();
 }
 
 void GameManager::movePlayed(int tile_to_move)

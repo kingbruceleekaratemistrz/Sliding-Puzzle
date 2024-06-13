@@ -25,6 +25,17 @@ void Board::initializeNewGame()
     } while (!isSolvable() || isSolved());
 }
 
+void Board::initializeNewGame(std::vector<int> tiles_values)
+{
+    tiles_.clear();
+
+    empty_tile_value_ = size_*size_;
+    for (int r = 0; r < size_; r++)
+        for (int c = 0; c < size_; c++)
+            tiles_.push_back(Tile(r, c, tiles_values.at(r*size_+c)));
+
+}
+
 const int& Board::getSize() const { return size_; }
 
 void Board::setSize(int size) { size_ = size; };

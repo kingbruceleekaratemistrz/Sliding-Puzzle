@@ -2,6 +2,8 @@
 
 Tile::Tile(int row, int col) : kRow_(row), kCol_(col) {}
 
+Tile::Tile(int row, int col, int value) : kRow_(row), kCol_(col), value_(value) {}
+
 const int& Tile::getValue() const { return value_; }
 
 const int& Tile::getRow() const { return kRow_; }

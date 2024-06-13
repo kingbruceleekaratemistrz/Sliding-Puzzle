@@ -17,6 +17,7 @@ public:
     void setSize(int size);
     std::vector<int> getTilesValues() const;
     void initializeNewGame();
+    void initializeNewGame(std::vector<int> tiles_values);
     void playMove(int tile_num);
     bool isSolved() const;
 private:
