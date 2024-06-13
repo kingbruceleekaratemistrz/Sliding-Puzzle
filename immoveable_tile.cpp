@@ -3,13 +3,13 @@
 #include <QSequentialAnimationGroup>
 #include <QPropertyAnimation>
 
-ImmoveableTile::ImmoveableTile(QRectF rect, QString text, QColor color)
-    : TileGraphicsItem(rect, text, color)
+ImmoveableTile::ImmoveableTile(QRectF rect, QString text, QColor color, QPixmap image, bool *show_numbers_ptr, bool image_mode)
+    : TileGraphicsItem(rect, text, color, image, show_numbers_ptr, image_mode)
 {
 }
 
-ImmoveableTile::ImmoveableTile(int x, int y, int w, int h, QString text, QColor color)
-    : TileGraphicsItem(x, y, w, h, text, color)
+ImmoveableTile::ImmoveableTile(int x, int y, int w, int h, QString text, QColor color, QPixmap image, bool *show_numbers_ptr, bool image_mode)
+    : TileGraphicsItem(x, y, w, h, text, color, image, show_numbers_ptr, image_mode)
 {
 }
 

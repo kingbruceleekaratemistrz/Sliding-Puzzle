@@ -20,8 +20,10 @@ private:
     MyTextBox *username_tb_;
     MySelectBox *boardsize_sb_;
     MySelectBox *maxtime_sb_;
+    MySelectBox *image_sb_;
     MyRadioBox *hold_rb_;
     MyRadioBox *toggle_rb_;
+    QGraphicsPixmapItem *pixmap_item_;
 
 public:
     enum { ADD_IMAGE, EXIT, SAVE, SAVE_AND_EXIT };
@@ -39,8 +41,12 @@ public:
     QList<MyButton*> getButtons();
     MyButton *getButton(int i);
     void reload();
+private:
+    void reloadImage();
 public slots:
-    void saveSettings();    
+    void saveSettings();
+private slots:
+    void openFileExplorer();
 };
 
 #endif // SETTINGSSCENE_H

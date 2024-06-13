@@ -192,6 +192,10 @@ void GameManager::initSettings()
         settings.setValue("imagemode", false);
     if (!settings.contains("showonhold"))
         settings.setValue("showonhold", true);
+    if (!settings.contains("image"))
+        settings.setValue("image", 1);
+    if (!settings.contains("numofimages"))
+        settings.setValue("numofimages", 2);
 }
 
 void GameManager::reload()

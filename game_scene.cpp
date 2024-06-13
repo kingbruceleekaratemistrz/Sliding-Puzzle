@@ -1,8 +1,12 @@
 #include "game_scene.h"
 
+#include <QSettings>
 #include <QPainter>
 #include <QTransform>
 #include <QTimer>
+#include <QKeyEvent>
+#include <QFile>
+
 #include "tile_graphics_item.h"
 #include "moveable_tile.h"
 #include "immoveable_tile.h"
@@ -25,6 +29,11 @@ GameScene::GameScene(QPointF resolution, int size, std::vector<int> tiles_values
     move_count_ = move_count;
     move_count_label_ = new MyLabel(QRectF(width()-200*sc, 120*sc, 200*sc, 70*sc), QString::number(move_count), Qt::AlignLeft, 40*sc);
     addItem(move_count_label_);
+
+    QSettings settings("./config.ini", QSettings::IniFormat);
+
+    show_numbers_ptr_ = new bool(false);
+    show_numbers_hold_ = settings.value("showonhold").toBool();
 
     int break_len = 40*sc/size;
     tile_size_ = (750*sc - break_len * (size - 1)) / size;
@@ -64,6 +73,23 @@ GameScene::GameScene(QPointF resolution, int size, std::vector<int> tiles_values
     int empty_tile_col = empty_tile_index % size;
     empty_tile_rect_ = QRect(585*sc+ empty_tile_col*tile_offset_, 150*sc + empty_tile_row*tile_offset_, tile_size_, tile_size_);
 
+
+
+    // wczytywanie obrazu, nazwa brana z settings(config)
+    QString path = "./assets/images/"+QString::number(settings.value("image").toInt())+".jpg";
+    if (!QFile::exists(path))
+        path = "./assets/images/"+QString::number(settings.value("image").toInt())+".png";
+    if (!QFile::exists(path))
+        path = "./assets/images/1.jpg";
+
+    QPixmap image(path);
+    image = image.scaled(tile_size_*board_size_, tile_size_*board_size_, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    bool image_mode = settings.value("imagemode").toBool();
+    QList<QPixmap> image_sections;
+    for (int i = 0; i < size; i++)
+        for (int j = 0; j < size; j++)
+            image_sections.push_back(image.copy(j*tile_size_, i*tile_size_, tile_size_, tile_size_));
+
     for (int i = 0; i < size; i++)
     {
         for (int j = 0; j < size; j++)
@@ -81,13 +107,15 @@ GameScene::GameScene(QPointF resolution, int size, std::vector<int> tiles_values
             else
                 color = colors[0];
 
-            TileGraphicsItem *tmp_tile;
+            TileGraphicsItem *tmp_tile;            
             if (isNeighborOfEmptyTile(i, j, empty_tile_row, empty_tile_col))
-                tmp_tile = new MoveableTile(585*sc+ j*tile_offset_, 150*sc + i*tile_offset_, tile_size_, tile_size_, QString::number(tiles_values[i*size+j]), color);
+                tmp_tile = new MoveableTile(585*sc+ j*tile_offset_, 150*sc + i*tile_offset_, tile_size_, tile_size_, QString::number(tiles_values[i*size+j]), color, image_sections.at(tiles_values[i*size+j]-1), show_numbers_ptr_, image_mode);
             else
-                tmp_tile = new ImmoveableTile(585*sc+ j*tile_offset_, 150*sc + i*tile_offset_, tile_size_, tile_size_, QString::number(tiles_values[i*size+j]), color);
+                tmp_tile = new ImmoveableTile(585*sc+ j*tile_offset_, 150*sc + i*tile_offset_, tile_size_, tile_size_, QString::number(tiles_values[i*size+j]), color, image_sections.at(tiles_values[i*size+j]-1), show_numbers_ptr_, image_mode);
+
             addItem(tmp_tile);
             connect(tmp_tile, SIGNAL(click()), this, SLOT(moveTile()));
+            connect(this, SIGNAL(updateTiles()), tmp_tile, SLOT(onUpdate()));
         }
     }
 
@@ -98,6 +126,11 @@ GameScene::GameScene(QPointF resolution, int size, std::vector<int> tiles_values
     int sec = time%60;
     timer_ = new MyTimer(QRectF(width()-200*sc, 50*sc, 200*sc, 70*sc), min, sec, 40*sc);
     addItem(timer_);
+}
+
+GameScene::~GameScene()
+{
+    delete show_numbers_ptr_;
 }
 
 bool GameScene::isNeighborOfEmptyTile(int r, int c, int er, int ec)
@@ -135,7 +168,10 @@ std::vector<TileGraphicsItem*> GameScene::findNeighbors(QRectF rect)
     std::vector<TileGraphicsItem*> neighbors;
     for (int i = 0; i < 4; i++)
     {
-        TileGraphicsItem *potential_neighbor = static_cast<TileGraphicsItem*>(this->itemAt(rect.x()+x_offsets[i], rect.y()+y_offsets[i], QTransform()));
+        qDebug() << "OFFSETS: "<< x_offsets[i] << ", " << y_offsets[i];
+        qDebug() << "COORDS: " << rect.x()+x_offsets[i]<< ", " << rect.y()+y_offsets[i];
+
+        TileGraphicsItem *potential_neighbor = static_cast<TileGraphicsItem*>(this->itemAt(rect.center().x()+x_offsets[i], rect.center().y()+y_offsets[i], QTransform()));
         if (potential_neighbor != nullptr)
             neighbors.push_back(potential_neighbor);
     }
@@ -162,10 +198,13 @@ void GameScene::moveTile()
             QRectF tmp_rect = tile->rect();
             QString tmp_text = tile->getText();
             QColor tmp_color = tile->getColor();
+            QPixmap tmp_image = tile->getImage();
+            bool tmp_image_mode = tile->getImageMode();
             delete tile;
-            MoveableTile *tmp_tile = new MoveableTile(tmp_rect, tmp_text, tmp_color);
+            MoveableTile *tmp_tile = new MoveableTile(tmp_rect, tmp_text, tmp_color, tmp_image, show_numbers_ptr_, tmp_image_mode);
             addItem(tmp_tile);
             connect(tmp_tile, SIGNAL(click()), this, SLOT(moveTile()));
+            connect(this, SIGNAL(updateTiles()), tmp_tile, SLOT(onUpdate()));
         }
 
         std::vector<TileGraphicsItem*> new_neighbors = findNeighbors(empty_tile_rect_);
@@ -176,14 +215,48 @@ void GameScene::moveTile()
             QRectF tmp_rect = tile->rect();
             QString tmp_text = tile->getText();
             QColor tmp_color = tile->getColor();
+            QPixmap tmp_image = tile->getImage();
+            bool tmp_image_mode = tile->getImageMode();
             delete tile;
-            ImmoveableTile *tmp_tile = new ImmoveableTile(tmp_rect, tmp_text, tmp_color);
+            ImmoveableTile *tmp_tile = new ImmoveableTile(tmp_rect, tmp_text, tmp_color, tmp_image, show_numbers_ptr_, tmp_image_mode);
             addItem(tmp_tile);
             connect(tmp_tile, SIGNAL(click()), this, SLOT(moveTile()));
+            connect(this, SIGNAL(updateTiles()), tmp_tile, SLOT(onUpdate()));
         }
 
         empty_tile_rect_ = rect_before_move;
         move_count_++;
         move_count_label_->setText(QString::number(move_count_label_->text().toInt()+1));
     }
+}
+
+void GameScene::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Alt && show_numbers_hold_)
+    {
+        *show_numbers_ptr_ = true;
+        emit updateTiles();
+    }
+    else
+        QGraphicsScene::keyPressEvent(event);
+
+}
+
+void GameScene::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Alt)
+    {
+        if (show_numbers_hold_)
+        {
+            *show_numbers_ptr_ = false;
+            emit updateTiles();
+        }
+        else
+        {
+            *show_numbers_ptr_ = !*show_numbers_ptr_;
+            emit updateTiles();
+        }
+    }
+    else
+        QGraphicsScene::keyReleaseEvent(event);
 }

@@ -47,6 +47,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         end_scene.h end_scene.cpp
         my_rounded_rect.h my_rounded_rect.cpp
         score_parser.h score_parser.cpp
+        my_image_select.h my_image_select.cpp
 
 
 

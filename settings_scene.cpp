@@ -6,6 +6,7 @@
 #include "my_button.h"
 #include "my_radio_box.h"
 
+#include <QFile>
 #include <QSettings>
 
 SettingsScene::SettingsScene(QPointF resolution)
@@ -22,6 +23,17 @@ SettingsScene::SettingsScene(QPointF resolution)
     initSelectBoxes(scale_x, scale_y);
     initRadioBoxes(scale_x, scale_y);
     initButtons(scale_x, scale_y);
+
+    QSettings settings("config.ini", QSettings::IniFormat);
+    QString path = "./assets/images/"+QString::number(settings.value("image").toInt())+".jpg";
+    if (!QFile::exists(path))
+        path = "./assets/images/"+QString::number(settings.value("image").toInt())+".png";
+    if (!QFile::exists(path))
+        path = "./assets/images/1.jpg";
+
+    pixmap_item_ = new QGraphicsPixmapItem(QPixmap(path).scaled(200*scale_x, 200*scale_y, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    pixmap_item_->setPos(490*scale_x, 770*scale_y);
+    addItem(pixmap_item_);
 }
 
 SettingsScene::~SettingsScene()
@@ -46,6 +58,7 @@ void SettingsScene::saveSettings()
     settings.setValue("maxtime", maxtime_sb_->val());
     settings.setValue("imagemode", imagemode_cb_->isChecked());
     settings.setValue("showonhold", hold_rb_->isChecked());
+    settings.setValue("image", image_sb_->val());
 }
 
 QList<MyButton*> SettingsScene::getButtons()
@@ -83,7 +96,7 @@ QPixmap SettingsScene::loadPixmap(QString path, QPointF resolution)
 
 void SettingsScene::initLabels(qreal sx, qreal sy)
 {
-    QRectF rect[13] = {
+    QRectF rect[14] = {
         QRectF(715*sx, 0*sy, 490*sx, 125*sy),
         QRectF(400*sx, 150*sy, 400*sx, 75*sy),
         QRectF(460*sx, 230*sy, 167*sx, 38*sy),
@@ -96,10 +109,11 @@ void SettingsScene::initLabels(qreal sx, qreal sy)
         QRectF(460*sx, 620*sy, 230*sx, 38*sy),
         QRectF(490*sx, 730*sy, 370*sx, 38*sy),
         QRectF(965*sx, 710*sy, 53*sx, 18*sy),
-        QRectF(1049*sx, 710*sy, 60*sx, 18*sy)
+        QRectF(1049*sx, 710*sy, 60*sx, 18*sy),
+        QRectF(873*sx, 730*sy, 54*sx, 38*sy)
     };
-    int font_size[13] = { int(75*sy), int(34*sy), int(23*sy), int(34*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(11*sy), int(11*sy) };
-    QString text[13] = {
+    int font_size[14] = { int(75*sy), int(34*sy), int(23*sy), int(34*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(23*sy), int(11*sy), int(11*sy), int(23*sy) };
+    QString text[14] = {
         "Ustawienia",
         "Ustawienia aplikacji",
         "Pełny ekran",
@@ -112,9 +126,10 @@ void SettingsScene::initLabels(qreal sx, qreal sy)
         "Tryb obrazkowy",
         "Wyświetl numery kafelków",
         "Naciśnij",
-        "Trzymaj"
+        "Trzymaj",
+        "alt"
     };
-    for (int i = 0; i < 13; i++)
+    for (int i = 0; i < 14; i++)
         addItem(new MyLabel(rect[i], text[i], Qt::AlignLeft, font_size[i]));
 }
 
@@ -144,9 +159,10 @@ void SettingsScene::initTextBoxes(qreal sx, qreal sy)
 void SettingsScene::initSelectBoxes(qreal sx, qreal sy)
 {
     QSettings settings("config.ini", QSettings::IniFormat);
-    QRectF rect[2] = {
+    QRectF rect[3] = {
         QRectF(873*sx, 420*sy, 200*sx, 44*sy),
-        QRectF(873*sx, 470*sy, 200*sx, 44*sy)
+        QRectF(873*sx, 470*sy, 200*sx, 44*sy),
+        QRectF(490*sx, 980*sy, 200*sx, 44*sy)
     };
 
     boardsize_sb_ = new MySelectBox(rect[0], MySelectBox::BOARD_SIZE, 2, 20, settings.value("boardsize").toInt(), 23*sy, 5*sy);
@@ -154,6 +170,30 @@ void SettingsScene::initSelectBoxes(qreal sx, qreal sy)
 
     maxtime_sb_ = new MySelectBox(rect[1], MySelectBox::TIME, 0, 3600, settings.value("maxtime").toInt(), 23*sy, 5*sx);
     addItem(maxtime_sb_);
+
+    image_sb_ = new MySelectBox(rect[2], MySelectBox::PAGES, 1, settings.value("numofimages").toInt(), settings.value("image").toInt(), 23*sy, 5*sx);
+    connect(image_sb_, &MySelectBox::click, this, [this] { reloadImage(); });
+    addItem(image_sb_);
+}
+
+void SettingsScene::reloadImage()
+{
+    removeItem(pixmap_item_);
+    delete pixmap_item_;
+
+    qreal sx = width()/1920.0;
+    qreal sy = height()/1080.0;
+    QSettings settings("config.ini", QSettings::IniFormat);
+
+    QString path = "./assets/images/"+QString::number(image_sb_->val())+".jpg";
+    if (!QFile::exists(path))
+        path = "./assets/images/"+QString::number(image_sb_->val())+".png";
+    if (!QFile::exists(path))
+        path = "./assets/images/1.jpg";
+
+    pixmap_item_ = new QGraphicsPixmapItem(QPixmap(path).scaled(200*sx, 200*sy, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    pixmap_item_->setPos(490*sx, 770*sy);
+    addItem(pixmap_item_);
 }
 
 void SettingsScene::initRadioBoxes(qreal sx, qreal sy)
@@ -161,8 +201,8 @@ void SettingsScene::initRadioBoxes(qreal sx, qreal sy)
     QSettings settings("config.ini", QSettings::IniFormat);
     QRectF rect(972*sx, 730*sy, 40*sx, 40*sy);
 
-    hold_rb_ = new MyRadioBox(rect, settings.value("showonhold").toBool(), 5*sx);
-    toggle_rb_ = new MyRadioBox(rect.adjusted(85*sx, 0, 85*sx, 0), !settings.value("showonhold").toBool(), 5*sx);
+    toggle_rb_ = new MyRadioBox(rect, !settings.value("showonhold").toBool(), 5*sx);
+    hold_rb_ = new MyRadioBox(rect.adjusted(85*sx, 0, 85*sx, 0), settings.value("showonhold").toBool(), 5*sx);
     connect(hold_rb_, SIGNAL(click()), toggle_rb_, SLOT(onClick()));
     connect(toggle_rb_, SIGNAL(click()), hold_rb_, SLOT(onClick()));
     addItem(hold_rb_);
@@ -180,6 +220,7 @@ void SettingsScene::initButtons(qreal sx, qreal sy)
     };
 
     buttons_.append(new MyButton(rect[0], "Dodaj obraz", 23*sy));
+    connect(buttons_[0], SIGNAL(click()), this, SLOT(openFileExplorer()));
     addItem(buttons_[0]);
 
     buttons_.append(new MyButton(rect[1], "Wyjdź", 23*sy));
@@ -192,4 +233,29 @@ void SettingsScene::initButtons(qreal sx, qreal sy)
     buttons_.append(new MyButton(rect[3], "Zapisz i wyjdź", 23*sy));
     connect(buttons_[3], SIGNAL(click()), this, SLOT(saveSettings()));
     addItem(buttons_[3]);
+}
+
+#include <QFileDialog>
+
+void SettingsScene::openFileExplorer()
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    QString path = QFileDialog::getOpenFileName(nullptr, tr("Wybierz obrazek"), "/home/", tr("Obrazy  (*.jpg *.png)"));
+    QPixmap pixmap(path);
+
+    settings.setValue("numofimages", settings.value("numofimages").toInt()+1);
+    QString new_path = "./assets/images/"+QString::number(settings.value("numofimages").toInt())+".png";
+    QFile file(new_path);
+    file.open(QIODevice::WriteOnly);
+    pixmap.save(&file, "PNG");
+
+    removeItem(image_sb_);
+    delete image_sb_;
+    qreal sx = width()/1920.0;
+    qreal sy = height()/1080.0;
+    settings.setValue("image", settings.value("numofimages").toInt());
+    image_sb_ = new MySelectBox(QRectF(490*sx, 980*sy, 200*sx, 44*sy), MySelectBox::PAGES, 1, settings.value("numofimages").toInt(), settings.value("image").toInt(), 23*sy, 5*sx);
+    connect(image_sb_, &MySelectBox::click, this, [this] { reloadImage(); });
+    addItem(image_sb_);
+    reloadImage();
 }
