@@ -48,7 +48,7 @@ void MySelectBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
     QString text = "";
     if (format_ == BOARD_SIZE)
         text = QString::number(val_)+"x"+QString::number(val_);
-    else
+    else if (format_ == TIME)
     {
         if (val_ == 0)
             text = "Wył.";
@@ -58,6 +58,9 @@ void MySelectBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
             text += (val_%60 < 10) ? "0"+QString::number(val_%60) : QString::number(val_%60);
         }
     }
+    else
+        text = QString::number(val_)+"/"+QString::number(kMax_);
+
 
     painter->drawText(rect(), Qt::AlignCenter, text);
 }
@@ -68,8 +71,17 @@ void MySelectBox::mousePressEvent(QGraphicsSceneMouseEvent *event)
     int w = rect().width();
     QRectF left_rect = rect().adjusted(2*arc_, 2*arc_,  h-w-2*arc_, -2*arc_);
     QRectF right_rect = rect().adjusted(w-h+2*arc_, 2*arc_, -2*arc_, -2*arc_);
+
+    int new_val;
+    if (format_ == TIME)
+        new_val = 10;
+    else
+        new_val = 1;
     if (left_rect.contains(event->pos()))
-        setVal(val_ - (format_ == BOARD_SIZE ? 1 : 10));
+    {
+        setVal(val_ - new_val);
+    }
     else if (right_rect.contains(event->pos()))
-        setVal(val_ + (format_ == BOARD_SIZE ? 1 : 10));
+        setVal(val_ + new_val);
+    emit click();
 }

@@ -23,7 +23,7 @@ GameScene::GameScene(QPointF resolution, int size, std::vector<int> tiles_values
     move_count_pixmap->setPos(width()-270*sc, 123*sc);
     addItem(move_count_pixmap);
     move_count_ = 0;
-    move_count_label_ = new MyLabel(QRectF(width()-200*sc, 120*sc, 200*sc, 70*sc), "0", 40*sc);
+    move_count_label_ = new MyLabel(QRectF(width()-200*sc, 120*sc, 200*sc, 70*sc), "0", Qt::AlignLeft, 40*sc);
     addItem(move_count_label_);
 
     int break_len = 40*sc/size;

@@ -2,12 +2,14 @@
 
 #include <QApplication>
 #include <QSettings>
+#include <QTimer>
 
 #include "main_menu_scene.h"
 #include "leadership_scene.h"
 #include "settings_scene.h"
 #include "game_scene.h"
 #include "end_scene.h"
+#include "score_parser.h"
 
 GameManager::GameManager() : board_(new Board())
 {
@@ -38,7 +40,7 @@ void GameManager::setMenuScene()
 
     MainMenuScene *new_scene = new MainMenuScene(QPointF(view_->width(), view_->height()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_NEW_GAME), SIGNAL(click()), this, SLOT(setGameScene()));
-    //connect(new_scene->getButton(MainMenuScene::BUTTON_LEADERSHIP))
+    connect(new_scene->getButton(MainMenuScene::BUTTON_LEADERSHIP), SIGNAL(click()), this, SLOT(setLeadershipScene()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_SETTINGS), SIGNAL(click()), this, SLOT(setSettingsScene()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_EXIT), SIGNAL(click()), QApplication::instance(), SLOT(quit()));
 
@@ -47,9 +49,11 @@ void GameManager::setMenuScene()
     prev_scene->deleteLater();
 }
 
-void GameManager::setEndScene(QPixmap background)
+void GameManager::setEndScene(QPixmap background, QPoint result)
 {
-    EndScene *new_scene = new EndScene(QPointF(view_->width(), view_->height()), background);
+    EndScene *new_scene = new EndScene(QPointF(view_->width(), view_->height()), background, result);
+    connect(new_scene->getButton(EndScene::NEW_GAME), SIGNAL(click()), this, SLOT(setGameScene()));
+    connect(new_scene->getButton(EndScene::BACK_TO_MENU), SIGNAL(click()), this, SLOT(setMenuScene()));
 
     QGraphicsScene *prev_scene = view_->scene();
     view_->setScene(new_scene);
@@ -82,28 +86,24 @@ void GameManager::setGameScene()
 void GameManager::setLeadershipScene()
 {
     LeadershipScene *new_scene = new LeadershipScene(QPoint(view_->width(), view_->height()));
+    connect(new_scene->getButton(), SIGNAL(click()), this, SLOT(setMenuScene()));
 
     QGraphicsScene *prev_scene = view_->scene();
-    view_->setScene(new_scene);    
+    view_->setScene(new_scene);
     prev_scene->deleteLater();
 }
 
-
-#include <QTimer>
-
 void GameManager::movePlayed(int tile_to_move)
 {
-    qDebug() << "Poruszono kafel: " << tile_to_move;
     board_->playMove(tile_to_move);    
     if (board_->isSolved() == true)
     {
-        qDebug() << "Wygrałeś koleżko!!!";
+        QSettings settings("config.ini", QSettings::IniFormat);
         QPoint result = static_cast<GameScene*>(view_->scene())->getResult();
-        qDebug() << "Liczba ruchów: " << result.x();
-        qDebug() << result.y();
-        qDebug() << "Czas: " << int(result.y()/60) << ":" << int(result.y()%60);
+        ScoreParser::saveScore(settings.value("username").toString(), result, board_->getSize());
+
         QTimer timer;
-        timer.singleShot(150, [this]{ setEndScene(view_->grab()); });
+        timer.singleShot(150, [this]{ setEndScene(view_->grab(), static_cast<GameScene*>(view_->scene())->getResult()); });
     }
 }
 

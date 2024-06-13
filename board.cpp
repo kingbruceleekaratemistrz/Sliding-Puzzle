@@ -8,14 +8,14 @@
 Board::Board()
 {
     QSettings settings("config.ini", QSettings::IniFormat);
-    size_ = settings.value("boardsize").toInt();
-    empty_tile_value_= size_*size_;
+    size_ = settings.value("boardsize").toInt();    
 }
 
 void Board::initializeNewGame()
 {
     tiles_.clear();
 
+    empty_tile_value_= size_*size_;
     for (int r = 0; r < size_; r++)
         for (int c = 0; c < size_; c++)
             tiles_.push_back(Tile(r, c));

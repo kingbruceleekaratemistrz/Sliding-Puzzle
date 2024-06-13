@@ -4,10 +4,13 @@
 #include <QPainter>
 #include <QKeyEvent>
 
-MyTextBox::MyTextBox(qreal x, qreal y, QString text, int font_size, int arc)
+MyTextBox::MyTextBox(QRectF rect, QString text, int font_size, int arc) : rect_(rect)
 {
     arc_ = (arc > 1) ? arc : 1;
-    setPos(x, y);
+    sc_ = rect.width()/200.0;
+    setPos(rect_.x(), rect_.y());
+    rect_.setX(0);
+    rect_.setY(0);
     setTextInteractionFlags(Qt::TextEditorInteraction);
     setFont(QFont("Irish Grover", font_size));
     setPlainText(text);
@@ -45,9 +48,9 @@ QPainterPath MyTextBox::shape() const
 }
 
 QRectF MyTextBox::boundingRect() const
-{
-    QRectF bounding_rect = QGraphicsTextItem::boundingRect();
-    if (bounding_rect.width() <= 200)
-        bounding_rect.setWidth(200);
+{    
+    QRectF bounding_rect = QGraphicsTextItem::boundingRect();    
+    if (bounding_rect.width() <= 200*sc_)
+        bounding_rect.setWidth(200*sc_);
     return bounding_rect;
 }

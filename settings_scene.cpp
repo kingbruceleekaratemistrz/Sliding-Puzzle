@@ -115,7 +115,7 @@ void SettingsScene::initLabels(qreal sx, qreal sy)
         "Trzymaj"
     };
     for (int i = 0; i < 13; i++)
-        addItem(new MyLabel(rect[i], text[i], font_size[i]));
+        addItem(new MyLabel(rect[i], text[i], Qt::AlignLeft, font_size[i]));
 }
 
 void SettingsScene::initCheckBoxes(qreal sx, qreal sy)
@@ -136,7 +136,7 @@ void SettingsScene::initCheckBoxes(qreal sx, qreal sy)
 void SettingsScene::initTextBoxes(qreal sx, qreal sy)
 {
     QSettings settings("config.ini", QSettings::IniFormat);
-    username_tb_ = new MyTextBox(873*sx, 370*sy, settings.value("username").toString(), 23*sy, 5*sx);
+    username_tb_ = new MyTextBox(QRectF(873*sx, 370*sy, 200*sx, 40*sy), settings.value("username").toString(), 23*sy, 5*sx);
     addItem(username_tb_);
 
 }

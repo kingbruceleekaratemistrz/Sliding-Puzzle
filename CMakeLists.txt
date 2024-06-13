@@ -45,6 +45,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         my_radio_box.h my_radio_box.cpp
         my_timer.h my_timer.cpp
         end_scene.h end_scene.cpp
+        my_rounded_rect.h my_rounded_rect.cpp
+        score_parser.h score_parser.cpp
 
 
 

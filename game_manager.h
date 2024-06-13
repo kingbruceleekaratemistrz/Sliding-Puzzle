@@ -19,7 +19,7 @@ public:
 private:
     void reload();
     void initSettings();
-    void setEndScene(QPixmap background);
+    void setEndScene(QPixmap background, QPoint result);
 private slots:
     void setMenuScene();
     void setSettingsScene();

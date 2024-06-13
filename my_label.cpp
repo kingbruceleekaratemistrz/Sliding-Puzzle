@@ -3,7 +3,7 @@
 #include <QPainter>
 #include <QGraphicsDropShadowEffect>
 
-MyLabel::MyLabel(QRectF rect, QString text, int font_size) : text_(text), font_size_(font_size)
+MyLabel::MyLabel(QRectF rect, QString text, int align_flag, int font_size) : text_(text), font_size_(font_size), align_flag_(align_flag)
 {
     setRect(rect);
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -16,7 +16,7 @@ void MyLabel::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
 {
     painter->setFont(QFont("Irish Grover", font_size_));
     painter->setPen(QColor(0, 14, 63));
-    painter->drawText(rect(), Qt::AlignLeft, text_);
+    painter->drawText(rect(), align_flag_, text_);
 }
 
 QString MyLabel::text()
