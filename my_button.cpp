@@ -9,8 +9,7 @@ MyButton::MyButton(QRectF rect, QString text, int font_size) : text_(text), font
 }
 
 void MyButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    qDebug() << "KLIKENS";
+{    
     emit click();
 }
 

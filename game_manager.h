@@ -17,6 +17,7 @@ public:
     GameManager();
     ~GameManager();
 private:
+    bool loadGameState(std::vector<int> &tiles_values, int &board_size, int &move_count, int &time_count);
     void reload();
     void initSettings();
     void setEndScene(QPixmap background, QPoint result);

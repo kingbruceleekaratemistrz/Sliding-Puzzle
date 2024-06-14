@@ -36,8 +36,12 @@ void MySelectBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
     QPainterPath path;
     path.addRoundedRect(rect(), arc_, arc_);
     path.addRoundedRect(rect().adjusted(arc_, arc_, -arc_, -arc_), arc_, arc_);
-    path.addRoundedRect(rect().adjusted(2*arc_, 2*arc_, h-w-2*arc_, -2*arc_), arc_, arc_);
-    path.addRoundedRect(rect().adjusted(w-h+2*arc_, 2*arc_, -2*arc_, -2*arc_), arc_, arc_);
+
+    int arrow_size = rect().height() - 4*arc_;
+    QPixmap arrow_left("./assets/settings/arrow_left.png");
+    QPixmap arrow_right("./assets/settings/arrow_right.png");
+    painter->drawPixmap(rect().x()+2*arc_, rect().y()+2*arc_, arrow_left.scaled(arrow_size, arrow_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    painter->drawPixmap(rect().x()+w-h+2*arc_, rect().y()+2*arc_, arrow_right.scaled(arrow_size, arrow_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     painter->setPen(QColor(0, 14, 63));
     painter->fillPath(path, QColor(0, 14, 63));

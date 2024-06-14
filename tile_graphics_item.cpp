@@ -54,8 +54,7 @@ void TileGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 }
 
 void TileGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
-    qDebug() << "!kilK";
+{    
     emit click();
 }
 

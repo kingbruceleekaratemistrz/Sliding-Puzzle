@@ -12,10 +12,10 @@ private:
     std::vector<Tile> tiles_;
 public:
     Board();
-
     const int& getSize() const;
     void setSize(int size);
     std::vector<int> getTilesValues() const;
+
     void initializeNewGame();
     void initializeNewGame(std::vector<int> tiles_values);
     void playMove(int tile_num);

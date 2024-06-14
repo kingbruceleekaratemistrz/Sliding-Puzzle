@@ -11,6 +11,18 @@ Board::Board()
     size_ = settings.value("boardsize").toInt();    
 }
 
+const int& Board::getSize() const { return size_; }
+
+void Board::setSize(int size) { size_ = size; };
+
+std::vector<int> Board::getTilesValues() const
+{
+    std::vector<int> tiles_values;
+    for (auto &t : tiles_)
+        tiles_values.push_back(t.getValue());
+    return tiles_values;
+}
+
 void Board::initializeNewGame()
 {
     tiles_.clear();
@@ -34,18 +46,6 @@ void Board::initializeNewGame(std::vector<int> tiles_values)
         for (int c = 0; c < size_; c++)
             tiles_.push_back(Tile(r, c, tiles_values.at(r*size_+c)));
 
-}
-
-const int& Board::getSize() const { return size_; }
-
-void Board::setSize(int size) { size_ = size; };
-
-std::vector<int> Board::getTilesValues() const
-{
-    std::vector<int> tiles_values;
-    for (auto &t : tiles_)
-        tiles_values.push_back(t.getValue());
-    return tiles_values;
 }
 
 void Board::playMove(int tile_num)

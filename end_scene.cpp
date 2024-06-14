@@ -2,11 +2,10 @@
 
 #include <QGraphicsPixmapItem>
 #include <QGraphicsBlurEffect>
-#include <QSettings>
 #include <QLinearGradient>
+#include <QSettings>
 
 #include "my_label.h"
-#include "my_button.h"
 #include "my_rounded_rect.h"
 
 EndScene::EndScene(QPointF resolution, QPixmap background, QPoint result)

@@ -8,15 +8,8 @@ ImmoveableTile::ImmoveableTile(QRectF rect, QString text, QColor color, QPixmap 
 {
 }
 
-ImmoveableTile::ImmoveableTile(int x, int y, int w, int h, QString text, QColor color, QPixmap image, bool *show_numbers_ptr, bool image_mode)
-    : TileGraphicsItem(x, y, w, h, text, color, image, show_numbers_ptr, image_mode)
-{
-}
-
 bool ImmoveableTile::move(QRectF empty_tile_rect, bool &animation_played)
-{    
-    qDebug() << "Klik na nieruszalny kafel";
-
+{        
     QRectF rect_moved_right = rect();
     rect_moved_right.moveLeft(rect_moved_right.x()+rect().width()*0.1);
     QRectF rect_moved_left = rect();
@@ -45,9 +38,4 @@ bool ImmoveableTile::move(QRectF empty_tile_rect, bool &animation_played)
     group_anim->start(QAbstractAnimation::DeleteWhenStopped);
 
     return false;
-}
-
-QString ImmoveableTile::toString()
-{
-    return QString("Immoveable Tile num: " + getText());
 }

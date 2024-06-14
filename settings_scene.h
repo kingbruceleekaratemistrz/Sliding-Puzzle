@@ -18,8 +18,7 @@ private:
     MyCheckBox *fullscreen_cb_;
     MyCheckBox *imagemode_cb_;
     MyTextBox *username_tb_;
-    MySelectBox *boardsize_sb_;
-    MySelectBox *maxtime_sb_;
+    MySelectBox *boardsize_sb_;    
     MySelectBox *image_sb_;
     MyRadioBox *hold_rb_;
     MyRadioBox *toggle_rb_;
@@ -39,8 +38,7 @@ public:
     SettingsScene(QPointF resolution);
     ~SettingsScene();
     QList<MyButton*> getButtons();
-    MyButton *getButton(int i);
-    void reload();
+    MyButton *getButton(int i);    
 private:
     void reloadImage();
 public slots:

@@ -1,7 +1,6 @@
 #ifndef ENDSCENE_H
 #define ENDSCENE_H
 
-#include <QObject>
 #include <QGraphicsScene>
 
 #include "my_button.h"

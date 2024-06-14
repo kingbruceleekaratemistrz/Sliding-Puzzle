@@ -34,6 +34,88 @@ GameManager::~GameManager()
     delete view_;
 }
 
+bool GameManager::loadGameState(std::vector<int> &tiles_values, int &board_size, int &move_count, int &time_count)
+{
+    QFile file("./gamestate");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    bool *ok = new bool;
+    QTextStream in(&file);
+    QStringList list = in.readLine().split(u';');
+    board_size = list.at(0).toInt(ok);
+    if (!ok)
+        return false;
+    move_count = list.at(1).toInt(ok);
+    if (!ok)
+        return false;
+    time_count = list.at(2).toInt(ok);
+    if (!ok)
+        return false;
+
+    list = in.readLine().split(u';');
+    for (auto &val : list)
+    {
+        int num = val.toInt(ok);
+        if (!ok || num < 0 || num > board_size*board_size)
+            return false;
+
+        tiles_values.push_back(num);
+    }
+
+    return true;
+}
+
+void GameManager::reload()
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    if (settings.value("fullscreen").toBool() && view_->windowState() != Qt::WindowFullScreen)
+    {
+        view_->setFixedSize(QSize(1920, 1080));
+        view_->setWindowState(Qt::WindowFullScreen);
+
+    }
+    else if (!settings.value("fullscreen").toBool() && view_->windowState() == Qt::WindowFullScreen)
+    {
+        view_->setWindowState(Qt::WindowNoState);
+        view_->setFixedSize(QSize(1280, 720));
+    }
+    if (settings.value("boardsize").toInt() != board_->getSize())
+        board_->setSize(settings.value("boardsize").toInt());
+}
+
+void GameManager::initSettings()
+{
+    QSettings settings("config.ini", QSettings::IniFormat);
+    if (!settings.contains("fullscreen"))
+        settings.setValue("fullscreen", true);
+    if (!settings.contains("username"))
+        settings.setValue("username", "player");
+    if (!settings.contains("boardsize"))
+        settings.setValue("boardsize", 3);
+    if (!settings.contains("maxtime"))
+        settings.setValue("maxtime", 0);
+    if (!settings.contains("imagemode"))
+        settings.setValue("imagemode", false);
+    if (!settings.contains("showonhold"))
+        settings.setValue("showonhold", true);
+    if (!settings.contains("image"))
+        settings.setValue("image", 1);
+    if (!settings.contains("numofimages"))
+        settings.setValue("numofimages", 2);
+}
+
+void GameManager::setEndScene(QPixmap background, QPoint result)
+{
+    EndScene *new_scene = new EndScene(QPointF(view_->width(), view_->height()), background, result);
+    connect(new_scene->getButton(EndScene::NEW_GAME), SIGNAL(click()), this, SLOT(setGameScene()));
+    connect(new_scene->getButton(EndScene::BACK_TO_MENU), SIGNAL(click()), this, SLOT(setMenuScene()));
+
+    QGraphicsScene *prev_scene = view_->scene();
+    view_->setScene(new_scene);
+    prev_scene->deleteLater();
+}
+
 void GameManager::setMenuScene()
 {
     reload();
@@ -44,17 +126,6 @@ void GameManager::setMenuScene()
     connect(new_scene->getButton(MainMenuScene::BUTTON_LEADERSHIP), SIGNAL(click()), this, SLOT(setLeadershipScene()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_SETTINGS), SIGNAL(click()), this, SLOT(setSettingsScene()));
     connect(new_scene->getButton(MainMenuScene::BUTTON_EXIT), SIGNAL(click()), QApplication::instance(), SLOT(quit()));
-
-    QGraphicsScene *prev_scene = view_->scene();
-    view_->setScene(new_scene);
-    prev_scene->deleteLater();
-}
-
-void GameManager::setEndScene(QPixmap background, QPoint result)
-{
-    EndScene *new_scene = new EndScene(QPointF(view_->width(), view_->height()), background, result);
-    connect(new_scene->getButton(EndScene::NEW_GAME), SIGNAL(click()), this, SLOT(setGameScene()));
-    connect(new_scene->getButton(EndScene::BACK_TO_MENU), SIGNAL(click()), this, SLOT(setMenuScene()));
 
     QGraphicsScene *prev_scene = view_->scene();
     view_->setScene(new_scene);
@@ -72,43 +143,26 @@ void GameManager::setSettingsScene()
     prev_scene->deleteLater();
 }
 
+void GameManager::setGameScene()
+{
+    board_->initializeNewGame();
+    GameScene *new_scene = new GameScene(QPointF(view_->width(), view_->height()), board_->getSize(), board_->getTilesValues());
+    connect(new_scene, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
+    connect(new_scene->getButton(), &MyButton::click, this, [this]{ saveGameState(static_cast<GameScene*>(view_->scene())->getResult()); });
+    connect(new_scene->getButton(), SIGNAL(click()), this, SLOT(setMenuScene()));
+
+    QGraphicsScene *prev_scene = view_->scene();
+    view_->setScene(new_scene);
+    prev_scene->deleteLater();
+}
+
 void GameManager::setContinueGameScene()
 {
-    QFile file("./gamestate");
-    bool fail = false;
     int board_size, move_count, time_count;
     std::vector<int> tiles_values;
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        qDebug() << "Nie udało się otwrzyć pliku zapisu";
-        fail = true;
-    }
+    bool load_succcess = loadGameState(tiles_values, board_size, move_count, time_count);
 
-    QTextStream in(&file);
-    if (in.atEnd())
-        fail = true;
-    else
-    {
-        QStringList list = in.readLine().split(u';');
-        board_size = list.at(0).toInt();
-        move_count = list.at(1).toInt();
-        time_count = list.at(2).toInt();
-    }
-    if (in.atEnd())
-        fail = true;
-    else
-    {
-        QStringList list = in.readLine().split(u';');
-        for (auto &val : list)
-            tiles_values.push_back(val.toInt());
-    }
-
-    if (fail)
-    {
-        setGameScene();
-        return;
-    }
-    else
+    if (load_succcess)
     {
         board_->setSize(board_size);
         board_->initializeNewGame(tiles_values);
@@ -121,20 +175,12 @@ void GameManager::setContinueGameScene()
         view_->setScene(new_scene);
         prev_scene->deleteLater();
     }
+    else
+    {
+        setGameScene();
+        return;
+    }
 
-}
-
-void GameManager::setGameScene()
-{
-    board_->initializeNewGame();
-    GameScene *new_scene = new GameScene(QPointF(view_->width(), view_->height()), board_->getSize(), board_->getTilesValues());
-    connect(new_scene, SIGNAL(playMove(int)), this, SLOT(movePlayed(int)));
-    connect(new_scene->getButton(), &MyButton::click, this, [this]{ saveGameState(static_cast<GameScene*>(view_->scene())->getResult()); });
-    connect(new_scene->getButton(), SIGNAL(click()), this, SLOT(setMenuScene()));
-
-    QGraphicsScene *prev_scene = view_->scene();
-    view_->setScene(new_scene);
-    prev_scene->deleteLater();
 }
 
 void GameManager::setLeadershipScene()
@@ -175,43 +221,4 @@ void GameManager::movePlayed(int tile_to_move)
         QTimer timer;
         timer.singleShot(150, [this]{ setEndScene(view_->grab(), static_cast<GameScene*>(view_->scene())->getResult()); });
     }
-}
-
-void GameManager::initSettings()
-{
-    QSettings settings("config.ini", QSettings::IniFormat);
-    if (!settings.contains("fullscreen"))
-        settings.setValue("fullscreen", true);
-    if (!settings.contains("username"))
-        settings.setValue("username", "player");
-    if (!settings.contains("boardsize"))
-        settings.setValue("boardsize", 3);
-    if (!settings.contains("maxtime"))
-        settings.setValue("maxtime", 0);
-    if (!settings.contains("imagemode"))
-        settings.setValue("imagemode", false);
-    if (!settings.contains("showonhold"))
-        settings.setValue("showonhold", true);
-    if (!settings.contains("image"))
-        settings.setValue("image", 1);
-    if (!settings.contains("numofimages"))
-        settings.setValue("numofimages", 2);
-}
-
-void GameManager::reload()
-{
-    QSettings settings("config.ini", QSettings::IniFormat);
-    if (settings.value("fullscreen").toBool() && view_->windowState() != Qt::WindowFullScreen)
-    {
-        view_->setFixedSize(QSize(1920, 1080));
-        view_->setWindowState(Qt::WindowFullScreen);
-
-    }
-    else if (!settings.value("fullscreen").toBool() && view_->windowState() == Qt::WindowFullScreen)
-    {
-        view_->setWindowState(Qt::WindowNoState);
-        view_->setFixedSize(QSize(1280, 720));
-    }
-    if (settings.value("boardsize").toInt() != board_->getSize())
-        board_->setSize(settings.value("boardsize").toInt());
 }

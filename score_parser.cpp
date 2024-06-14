@@ -2,7 +2,6 @@
 
 #include <QPoint>
 #include <QTextStream>
-#include <QDebug>
 
 QFile ScoreParser::score_file("./scores");
 

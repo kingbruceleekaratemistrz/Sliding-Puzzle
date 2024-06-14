@@ -37,7 +37,7 @@ LeadershipScene::LeadershipScene(QPoint resolution)
     connect(pages_sb_, &MySelectBox::click, this, [this]{ current_page_ = pages_sb_->val(); loadLabels(); });
     addItem(pages_sb_);
 
-    exit_button_ = new MyButton(QRectF(834*sx, 908*sy, 260*sx, 50*sy), "Wróć do menu", 30*sy);
+    exit_button_ = new MyButton(QRectF(774*sx, 908*sy, 380*sx, 67*sy), "Wróć do menu", 40*sy);
     addItem(exit_button_);
 }
 

@@ -3,9 +3,7 @@
 
 #include <QObject>
 #include <QGraphicsScene>
-#include <QRectF>
 #include <vector>
-
 
 #include "tile_graphics_item.h"
 #include "my_button.h"
@@ -23,13 +21,14 @@ private:
     qreal tile_size_;
     qreal tile_offset_;
     QRectF empty_tile_rect_;
-    QPixmap *background_;
-    MyButton *button_;
+    MyButton *back_to_menu_button_;
     int move_count_;
     MyLabel *move_count_label_;
-    MyTimer *timer_;    
+    MyTimer *timer_;
+
+    static QColor colors[19];
 public:
-    GameScene(QPointF resolution, int size, std::vector<int> tiles_values, int time = 0, int move_count = 0);
+    GameScene(QPointF resolution, int size, std::vector<int> tiles_values, int time_count = 0, int move_count = 0);
     ~GameScene();
     MyButton *getButton();
     QPoint getResult();
@@ -38,6 +37,9 @@ public:
 private:
     std::vector<TileGraphicsItem*> findNeighbors(QRectF rect);
     bool isNeighborOfEmptyTile(int r, int c, int er, int ec);
+    void loadPixmaps(qreal sx, qreal sy, int move_count, int time_count);
+    void loadTiles(qreal sx, qreal sy, std::vector<int> &tiles_values, int size);
+    QList<QPixmap> loadImages();
 public slots:
     void moveTile();    
 signals:

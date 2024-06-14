@@ -26,8 +26,7 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);    
-    virtual bool move(QRectF empty_space_rect, bool &animation_played) = 0;
-    virtual QString toString() = 0;
+    virtual bool move(QRectF empty_space_rect, bool &animation_played) = 0;    
 public slots:
     void onUpdate();
 signals:

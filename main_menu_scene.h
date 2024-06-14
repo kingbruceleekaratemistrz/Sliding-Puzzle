@@ -11,8 +11,7 @@ class MainMenuScene : public QGraphicsScene
 private:
     QList<MyPixmapButton *> buttons_;
 public:
-    MainMenuScene(QPointF resolution);
-    ~MainMenuScene();
+    MainMenuScene(QPointF resolution);    
     MyPixmapButton *getButton(int i);
 
     enum { BUTTON_CONTINUE, BUTTON_NEW_GAME, BUTTON_LEADERSHIP, BUTTON_SETTINGS, BUTTON_EXIT };

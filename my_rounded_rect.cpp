@@ -1,7 +1,6 @@
 #include "my_rounded_rect.h"
 
 #include <QPainter>
-#include <QBrush>
 
 MyRoundedRect::MyRoundedRect(QRectF rect, QBrush brush, int arc) : brush_(brush)
 {

@@ -35,11 +35,6 @@ MainMenuScene::MainMenuScene(QPointF resolution)
     }
 }
 
-MainMenuScene::~MainMenuScene()
-{
-
-}
-
 MyPixmapButton *MainMenuScene::getButton(int i)
 {
     return buttons_[i];
